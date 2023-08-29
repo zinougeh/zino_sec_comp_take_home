@@ -41,7 +41,7 @@ resource "aws_security_group" "allow_ssh" {
 
 resource "aws_instance" "ec2_instance" {
   ami           = "ami-09d95fab7fff3776c"  # Ubuntu Server 20.04 LTS
-  instance_type = "t2.micro"
+  instance_type = "t2.large"
   key_name      = aws_key_pair.deployer.key_name
 
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
@@ -56,7 +56,7 @@ resource "aws_instance" "ec2_instance" {
 
 resource "aws_key_pair" "deployer" {
   key_name   = "sec_com_ass_key_pair"
-  public_key = file("~/.ssh/id_rsa.pub")
+  public_key = file("${var.WORKSPACE}/.ssh/id_rsa.pub")
 }
 
 resource "aws_eip" "eip_alloc" {
@@ -95,4 +95,10 @@ output "instance_public_ip" {
 output "instance_private_ip" {
   description = "Private IP of the EC2 instance"
   value       = aws_instance.ec2_instance.private_ip
+}
+
+variable "WORKSPACE" {
+  description = "The path to the current Jenkins workspace"
+  type        = string
+  default     = "."  # Defaulting to current directory, but this will be overridden by Jenkins
 }
