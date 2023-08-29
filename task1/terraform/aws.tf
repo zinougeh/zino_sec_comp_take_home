@@ -2,10 +2,16 @@ provider "aws" {
   region = "us-west-1"
 }
 
-# Using locals to determine path
 locals {
-  jenkins_workspace = terraform.workspace == "default" ? "." : terraform.workspace
+  # Using Jenkins WORKSPACE variable to get the current Jenkins workspace directory
+  jenkins_workspace = var.JENKINS_WORKSPACE
   ssh_key_path      = "${local.jenkins_workspace}/.ssh/id_rsa.pub"
+}
+
+# Input variable for Jenkins workspace
+variable "JENKINS_WORKSPACE" {
+  description = "The Jenkins workspace directory path"
+  default     = "."  # Default to current directory if not provided
 }
 
 resource "aws_vpc" "main_vpc" {
@@ -16,10 +22,9 @@ resource "aws_vpc" "main_vpc" {
 }
 
 resource "aws_subnet" "main_subnet" {
-  vpc_id     = aws_vpc.main_vpc.id
-  cidr_block = "10.0.1.0/24"
+  vpc_id                  = aws_vpc.main_vpc.id
+  cidr_block              = "10.0.1.0/24"
   map_public_ip_on_launch = true
-
   tags = {
     Name = "Main Subnet"
   }
@@ -29,10 +34,15 @@ resource "aws_security_group" "allow_ssh" {
   name        = "allow_ssh"
   description = "Allow SSH inbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
-
   ingress {
     from_port   = 22
     to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -46,15 +56,12 @@ resource "aws_security_group" "allow_ssh" {
 }
 
 resource "aws_instance" "ec2_instance" {
-  ami           = "ami-09d95fab7fff3776c"  # Ubuntu Server 20.04 LTS
-  instance_type = "t2.micro"
-  key_name      = aws_key_pair.deployer.key_name
-
+  ami                   = "ami-09d95fab7fff3776c"  # Ubuntu Server 20.04 LTS
+  instance_type         = "t2.micro"
+  key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
   subnet_id              = aws_subnet.main_subnet.id
-  
-  user_data = file("user_data.sh")
-
+  user_data              = file("user_data.sh")
   tags = {
     Name = "MicroK8s-Instance"
   }
