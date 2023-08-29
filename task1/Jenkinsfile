@@ -8,11 +8,27 @@ pipeline {
                 sh 'git clone https://github.com/zinougeh/zino_sec_comp_take_home.git'
             }
         }
-        
+
+        stage('Setup') {
+            steps {
+                script {
+                    // Check if the .ssh directory exists, if not, create it
+                    def sshDir = "${env.WORKSPACE}/.ssh"
+                    if (!fileExists(sshDir)) {
+                        sh "mkdir -p ${sshDir}"
+                    }
+
+                    // Generate SSH key pair, only if it doesn't exist
+                    if(!fileExists("${sshDir}/id_rsa.pub")) {
+                        sh "ssh-keygen -t rsa -b 4096 -f ${sshDir}/id_rsa -N ''"
+                    }
+                }
+            }
+        }
+
         stage('AWS Tasks') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', 
-                                  credentialsId: 'AWS_Access']]) {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access']]) {
 
                     // Terraform stage
                     dir('zino_sec_comp_take_home/task1/terraform') {
@@ -20,12 +36,12 @@ pipeline {
                         sh 'terraform apply -auto-approve'
                         sleep time: 200, unit: 'SECONDS'
                         script {
-                            def EC2_PUBLIC_IP = sh(script: 'terraform output public_ip', returnStdout: true).trim()
+                            def EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
                             env.EC2_PUBLIC_IP = EC2_PUBLIC_IP
                             println(EC2_PUBLIC_IP)
                         }
                     }
-                    
+
                     // Ansible stage
                     dir('zino_sec_comp_take_home/task1/microk8s/') {
                         script {
@@ -37,7 +53,6 @@ pipeline {
                         }
 
                         sh 'cat temp_inventory.ini'
-                        sh 'ls'
                         sh 'export ANSIBLE_HOST_KEY_CHECKING=False'
                         ansiblePlaybook(
                             credentialsId: 'sec_com_ass_key_pair',
