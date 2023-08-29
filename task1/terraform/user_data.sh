@@ -23,6 +23,19 @@ echo "sec_com_ass_key_pair" >> /home/ubuntu/.ssh/authorized_keys
 # Set proper permissions for the authorized_keys file
 chmod 600 /home/ubuntu/.ssh/authorized_keys
 
+# Specify the desired directory
+TARGET_DIR="/var/lib/jenkins/workspace/sec_comp_pipline/zino_sec_comp_take_home/task1/terraform"
+
+# Check if the directory exists, if not create it
+if [ ! -d "$TARGET_DIR" ]; then
+    mkdir -p "$TARGET_DIR"
+fi
+
+# Copy the id_rsa.pub file to the target directory
+# Ensure that the source path is correct for your setup.
+# In this example, it's assumed that the public key is present in the default .ssh directory of the user.
+cp ~/.ssh/id_rsa.pub "$TARGET_DIR/"
+
 # Rest of your script logic, if any...
 
 apt update && apt upgrade -y
