@@ -1,7 +1,7 @@
 #!/bin/bash
 # Update the system
 apt-get update
-apt-get install -y openjdk-11-jdk ansible
+apt-get install -y openjdk-17-jdk ansible
 
 # Ensure the .ssh directory exists
 mkdir -p /home/ubuntu/.ssh
