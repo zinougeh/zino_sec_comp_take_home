@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        WORKSPACE = "${env.WORKSPACE}"
+    }
+
     stages {
         stage('Clean workspace') {
             steps {
@@ -12,7 +16,7 @@ pipeline {
         stage('Setup') {
             steps {
                 script {
-                    // Check if the .ssh directory exists, if not, create it
+                    // Ensure .ssh directory exists
                     def sshDir = "${env.WORKSPACE}/.ssh"
                     if (!fileExists(sshDir)) {
                         sh "mkdir -p ${sshDir}"
