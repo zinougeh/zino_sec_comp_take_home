@@ -1,17 +1,11 @@
 provider "aws" {
-  region = "us-west-1"
+   region = "us-west-1"
 }
 
-locals {
-  # Using Jenkins WORKSPACE variable to get the current Jenkins workspace directory
-  jenkins_workspace = var.JENKINS_WORKSPACE
-  ssh_key_path      = "${local.jenkins_workspace}/.ssh/id_rsa.pub"
-}
-
-# Input variable for Jenkins workspace
-variable "JENKINS_WORKSPACE" {
-  description = "The Jenkins workspace directory path"
-  default     = "."  # Default to current directory if not provided
+variable "ssh_public_key" {
+    description = "SSH Public Key"
+    type        = string
+    default     = ""
 }
 
 resource "aws_vpc" "main_vpc" {
