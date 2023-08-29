@@ -63,7 +63,7 @@ resource "aws_instance" "ec2_instance" {
 
 resource "aws_key_pair" "deployer" {
   key_name   = "sec_com_ass_key_pair"
-  public_key = file(local.ssh_key_path)
+  public_key = var.ssh_public_key
 }
 
 resource "aws_eip" "eip_alloc" {
