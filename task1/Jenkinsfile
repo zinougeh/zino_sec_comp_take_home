@@ -5,7 +5,7 @@ pipeline {
         stage('Clean workspace') {
             steps {
                 cleanWs()
-                sh 'git clone https://github.com/zinougeh/zino_sec_comp_take_home'
+                sh 'git clone https://github.com/zinougeh/zino_sec_comp_take_home.git'
             }
         }
         
@@ -15,7 +15,7 @@ pipeline {
                                   credentialsId: 'AWS_Access']]) {
 
                     // Terraform stage
-                    dir('task1/terraform') {
+                    dir('zino_sec_comp_take_home/task1/terraform') {
                         sh 'terraform init'
                         sh 'terraform apply -auto-approve'
                         sleep time: 200, unit: 'SECONDS'
@@ -27,19 +27,20 @@ pipeline {
                     }
                     
                     // Ansible stage
-                    dir('task1/microk8s/') {
-                        def inventoryFile = """
-                            [EC2]
-                            ${env.EC2_PUBLIC_IP}
-                        """
-
-                        writeFile file: 'temp_inventory.ini', text: inventoryFile
+                    dir('zino_sec_comp_take_home/task1/microk8s/') {
+                        script {
+                            def inventoryFile = """
+                                [EC2]
+                                ${env.EC2_PUBLIC_IP}
+                            """
+                            writeFile file: 'temp_inventory.ini', text: inventoryFile
+                        }
 
                         sh 'cat temp_inventory.ini'
                         sh 'ls'
                         sh 'export ANSIBLE_HOST_KEY_CHECKING=False'
                         ansiblePlaybook(
-                            credentialsId: 'jenkins',
+                            credentialsId: 'sec_com_ass_key_pair',
                             inventory: 'temp_inventory.ini',
                             playbook: 'ansible.yml',
                             hostKeyChecking: 'false'
@@ -47,10 +48,10 @@ pipeline {
                     }
 
                     // SonarQube Helm stage
-                    dir('task1/sonar/') {
+                    dir('zino_sec_comp_take_home/task1/sonar/') {
                         sleep time: 60, unit: 'SECONDS'
                         script {
-                            sshagent(credentials: ['jenkins']) {
+                            sshagent(credentials: ['sec_com_ass_key_pair']) {
                                 sh "scp -o StrictHostKeyChecking=no -r sonarqube ubuntu@${env.EC2_PUBLIC_IP}:/tmp"
                                 sh "ssh -o StrictHostKeyChecking=no ubuntu@${env.EC2_PUBLIC_IP} 'sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls'"
                             }
@@ -61,4 +62,3 @@ pipeline {
         }
     }
 }
-
