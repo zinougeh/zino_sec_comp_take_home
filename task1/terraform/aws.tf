@@ -25,13 +25,14 @@ resource "aws_subnet" "main_subnet" {
 resource "aws_security_group" "ec2_sg" {
   vpc_id      = aws_vpc.main_vpc.id
   name        = "ec2_sg"
-  description = "Allow SSH and HTTP"
+  description = "Allow SSH from Jenkins and HTTP"
 
+  # Open SSH port only for Jenkins IP
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["54.244.39.147/32"]  # Replace with your Jenkins Server IP
   }
 
   ingress {
@@ -61,6 +62,11 @@ resource "aws_instance" "ec2_instance" {
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]
   associate_public_ip_address = true
   key_name                    = "sec_com_ass_key_pair"
+
+  # Introduce a delay to ensure SSH is ready on EC2 (optional, based on your needs)
+  provisioner "local-exec" {
+    command = "sleep 120"
+  }
 
   tags = {
     Name = "EC2_INSTANCE_BY_JENKINS"
