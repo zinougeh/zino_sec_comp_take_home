@@ -57,7 +57,7 @@ resource "aws_security_group" "allow_ssh" {
 
 resource "aws_instance" "ec2_instance" {
   ami                   = "ami-09d95fab7fff3776c"  # Ubuntu Server 20.04 LTS
-  instance_type         = "t2.micro"
+  instance_type         = "t2.large"
   key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
   subnet_id              = aws_subnet.main_subnet.id
