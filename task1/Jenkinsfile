@@ -1,0 +1,77 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID = credentials('aws-access-key-id')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-access-key')
+    }
+
+    stages {
+
+
+        stage('Clean workspace') {
+            steps {
+                cleanWs()
+                sh 'git clone https://github.com/zinougeh/zino_sec_comp_take_home'
+
+            }
+        }
+
+        stage('Terraform to Spin New EC2 server') {
+            steps {
+                // Run Terraform commands
+                dir('zinougeh/task1/terraform')
+                {
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
+                    sleep time: 200, unit: 'SECONDS'
+                    script {
+                        def EC2_PUBLIC_IP = sh(script: 'terraform output public_ip', returnStdout: true).trim()
+                        env.EC2_PUBLIC_IP = EC2_PUBLIC_IP
+                        println(EC2_PUBLIC_IP)
+                    }
+                }
+            }
+        }
+        
+        stage('Ansible to Install MicroK8s') {
+            steps {
+                dir('zinougeh/task1/microk8s/') {
+                    script {
+                        // env.EC2_PUBLIC_IP="100.25.146.217"
+                        def inventoryFile = """
+                            [EC2]
+                            ${env.EC2_PUBLIC_IP}
+                        """
+
+                        writeFile file: 'temp_inventory.ini', text: inventoryFile
+
+                        sh 'cat temp_inventory.ini'
+                        sh 'ls'
+                        sh 'export ANSIBLE_HOST_KEY_CHECKING=False'
+                        ansiblePlaybook(
+                            credentialsId: 'jenkins',
+                            inventory: 'temp_inventory.ini',
+                            playbook: 'ansible.yml',
+                            hostKeyChecking: 'false'
+                        )
+                    }
+            }
+        }
+    }
+        stage('SonarQube Helm') {
+            steps {
+                dir('zinougeh/task1/sonar/'){
+                    sleep time: 60, unit: 'SECONDS'
+                    script {
+                    sshagent(credentials: ['jenkins']) {
+                        sh "scp -o StrictHostKeyChecking=no  -r sonarqube ubuntu@${env.EC2_PUBLIC_IP}:/tmp"
+                        sh "ssh -o StrictHostKeyChecking=no  ubuntu@${env.EC2_PUBLIC_IP} 'sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls'"
+                    }
+
+                }
+                }
+            }
+        }
+    }
+}

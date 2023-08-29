@@ -1,0 +1,18 @@
+# sonarqube/templates/service.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: sonar
+  labels:
+    app: sonar
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: 9000
+      targetPort: 9000
+      protocol: TCP
+      name: http
+      nodePort: {{ .Values.service.nodePort }}
+  selector:
+    app: sonar

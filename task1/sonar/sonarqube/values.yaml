@@ -1,0 +1,14 @@
+# sonarqube/values.yaml
+
+sonarqube:
+  image:
+    repository: sonarqube
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1  
+
+service:
+  type: NodePort
+  nodePort: 30080
+
+ingressEnabled: false

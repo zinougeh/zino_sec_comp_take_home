@@ -1,0 +1,53 @@
+﻿
+2023-08-22 19:46:53,302 - DEBUG - Detected columns in CSV: ['id', 'first_name', 'last_name', 'email', 'avatar']
+2023-08-22 19:46:53,303 - INFO - 10 records read from .\data.csv
+2023-08-22 19:46:53,323 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:53,458 - DEBUG - https://reqres.in:443 "GET /api/users/1 HTTP/1.1" 200 None
+2023-08-22 19:46:53,464 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:53,860 - DEBUG - https://reqres.in:443 "PATCH /api/users/1 HTTP/1.1" 200 None
+2023-08-22 19:46:53,866 - INFO - Updated record 1.
+2023-08-22 19:46:53,880 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:53,983 - DEBUG - https://reqres.in:443 "GET /api/users/2 HTTP/1.1" 200 None
+2023-08-22 19:46:53,989 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:54,282 - DEBUG - https://reqres.in:443 "PATCH /api/users/2 HTTP/1.1" 200 None
+2023-08-22 19:46:54,287 - INFO - Updated record 2.
+2023-08-22 19:46:54,301 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:54,394 - DEBUG - https://reqres.in:443 "GET /api/users/3 HTTP/1.1" 200 None
+2023-08-22 19:46:54,412 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:54,697 - DEBUG - https://reqres.in:443 "PATCH /api/users/3 HTTP/1.1" 200 None
+2023-08-22 19:46:54,702 - INFO - Updated record 3.
+2023-08-22 19:46:54,714 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:54,803 - DEBUG - https://reqres.in:443 "GET /api/users/4 HTTP/1.1" 200 None
+2023-08-22 19:46:54,809 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:55,096 - DEBUG - https://reqres.in:443 "PATCH /api/users/4 HTTP/1.1" 200 None
+2023-08-22 19:46:55,102 - INFO - Updated record 4.
+2023-08-22 19:46:55,114 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:55,414 - DEBUG - https://reqres.in:443 "GET /api/users/5 HTTP/1.1" 200 None
+2023-08-22 19:46:55,421 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:55,907 - DEBUG - https://reqres.in:443 "PATCH /api/users/5 HTTP/1.1" 200 None
+2023-08-22 19:46:55,913 - INFO - Updated record 5.
+2023-08-22 19:46:55,941 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:56,238 - DEBUG - https://reqres.in:443 "GET /api/users/6 HTTP/1.1" 200 None
+2023-08-22 19:46:56,243 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:56,518 - DEBUG - https://reqres.in:443 "PATCH /api/users/6 HTTP/1.1" 200 None
+2023-08-22 19:46:56,524 - INFO - Updated record 6.
+2023-08-22 19:46:56,535 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:56,630 - DEBUG - https://reqres.in:443 "GET /api/users/7 HTTP/1.1" 200 None
+2023-08-22 19:46:56,636 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:56,910 - DEBUG - https://reqres.in:443 "PATCH /api/users/7 HTTP/1.1" 200 None
+2023-08-22 19:46:56,916 - INFO - Updated record 7.
+2023-08-22 19:46:56,927 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:57,021 - DEBUG - https://reqres.in:443 "GET /api/users/8 HTTP/1.1" 200 None
+2023-08-22 19:46:57,028 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:57,353 - DEBUG - https://reqres.in:443 "PATCH /api/users/8 HTTP/1.1" 200 None
+2023-08-22 19:46:57,359 - INFO - Updated record 8.
+2023-08-22 19:46:57,370 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:57,469 - DEBUG - https://reqres.in:443 "GET /api/users/9 HTTP/1.1" 200 None
+2023-08-22 19:46:57,475 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:57,747 - DEBUG - https://reqres.in:443 "PATCH /api/users/9 HTTP/1.1" 200 None
+2023-08-22 19:46:57,752 - INFO - Updated record 9.
+2023-08-22 19:46:57,764 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:57,861 - DEBUG - https://reqres.in:443 "GET /api/users/10 HTTP/1.1" 200 None
+2023-08-22 19:46:57,867 - DEBUG - Starting new HTTPS connection (1): reqres.in:443
+2023-08-22 19:46:58,271 - DEBUG - https://reqres.in:443 "PATCH /api/users/10 HTTP/1.1" 200 None
+2023-08-22 19:46:58,276 - INFO - Updated record 10.
