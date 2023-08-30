@@ -75,12 +75,21 @@ resource "aws_eip" "eip_alloc" {
   }
 }
 
+resource "aws_internet_gateway" "main_gw" {
+  vpc_id = aws_vpc.main_vpc.id
+
+  tags = {
+    Name = "Main Internet Gateway"
+  }
+}
+
 resource "aws_route_table" "route_table" {
   vpc_id = aws_vpc.main_vpc.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_vpc.main_vpc.main_route_table_id
+    gateway_id = aws_internet_gateway.main_gw.id
   }
+
   tags = {
     Name = "Main Route Table"
   }
