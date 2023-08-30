@@ -61,6 +61,14 @@ resource "aws_instance" "ec2_instance" {
   }
 }
 
+resource "aws_eip" "eip_alloc" {
+  instance = aws_instance.ec2_instance.id
+
+  tags = {
+    Name = "EC2 EIP"
+  }
+}
+
 resource "aws_key_pair" "deployer" {
   key_name   = "sec_com_ass_key_pair"
   public_key = var.ssh_public_key
