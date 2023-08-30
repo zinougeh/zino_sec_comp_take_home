@@ -24,18 +24,20 @@ resource "aws_subnet" "main_subnet" {
   }
 }
 
-resource "aws_security_group" "allow_ssh" {
-  name        = "allow_ssh"
-  description = "Allow SSH inbound traffic"
+resource "aws_security_group" "allow_ssh_and_http" {
+  name        = "allow_ssh_and_http"
+  description = "Allow SSH and HTTP inbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
   
+  # SSH ingress
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
+  
+  # HTTP ingress
   ingress {
     from_port   = 80
     to_port     = 80
@@ -43,6 +45,7 @@ resource "aws_security_group" "allow_ssh" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  # Egress
   egress {
     from_port   = 0
     to_port     = 0
@@ -52,12 +55,12 @@ resource "aws_security_group" "allow_ssh" {
 }
 
 resource "aws_instance" "ec2_instance" {
-  ami                   = "ami-04d1dcfb793f6fa37"
+  ami                   = "ami-04d1dcfb793f6fa37" # Please verify this AMI is correct for your use-case.
   instance_type         = "t2.large"
   key_name              = aws_key_pair.deployer.key_name
-  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+  vpc_security_group_ids = [aws_security_group.allow_ssh_and_http.id]
   subnet_id              = aws_subnet.main_subnet.id
-  user_data              = file("${path.module}/user_data.sh")
+  user_data              = file("${path.module}/user_data.sh") # Using relative path from the Terraform module.
   tags = {
     Name = "MicroK8s-Instance"
   }
