@@ -52,7 +52,7 @@ resource "aws_security_group" "allow_ssh" {
 }
 
 resource "aws_instance" "ec2_instance" {
-  ami                   = "ami-04d1dcfb793f6fa37"  # Ubuntu Server 20.04 LTS
+  ami                   = "ami-04d1dcfb793f6fa37"
   instance_type         = "t2.large"
   key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
