@@ -2,17 +2,14 @@ pipeline {
     agent any
 
     environment {
-        WORKSPACE_DIR = "${env.WORKSPACE}" // Use Jenkins workspace
+        WORKSPACE_DIR = "${env.WORKSPACE}" // Use Jenkins workspace programmatically
     }
 
     stages {
         stage('Initialization') {
             steps {
-                // Clean Jenkins workspace
-                deleteDir()
-                
-                // Clone the repository
-                sh 'git clone https://github.com/zinougeh/zino_sec_comp_take_home.git'
+                deleteDir() // Clean Jenkins workspace
+                checkout scm // Clone the repository
             }
         }
 
@@ -20,15 +17,13 @@ pipeline {
             steps {
                 script {
                     def sshDir = "${WORKSPACE_DIR}/.ssh"
-                    if (!fileExists(sshDir)) {
-                        sh "mkdir -p ${sshDir}"
-                    }
-                    if(!fileExists("${sshDir}/id_rsa.pub")) {
-                        sh "ssh-keygen -t rsa -b 4096 -f ${sshDir}/id_rsa -N '' -m PEM"
-                        env.SSH_PUBLIC_KEY = sh(script: "cat ${sshDir}/id_rsa.pub", returnStdout: true).trim()
-                    } else {
-                        env.SSH_PUBLIC_KEY = sh(script: "cat ${sshDir}/id_rsa.pub", returnStdout: true).trim()
-                    }
+                    sh """
+                        mkdir -p ${sshDir}
+                        if [ ! -f ${sshDir}/id_rsa.pub ]; then
+                            ssh-keygen -t rsa -b 4096 -f ${sshDir}/id_rsa -N '' -m PEM
+                        fi
+                    """
+                    env.SSH_PUBLIC_KEY = sh(script: "cat ${sshDir}/id_rsa.pub", returnStdout: true).trim()
                 }
             }
         }
@@ -39,7 +34,6 @@ pipeline {
                     dir('zino_sec_comp_take_home/task1/terraform') {
                         sh 'terraform init'
                         sh "terraform apply -var 'ssh_public_key=${SSH_PUBLIC_KEY}' -auto-approve"
-                        sleep time: 200, unit: 'SECONDS'
                         script {
                             env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
                         }
@@ -50,7 +44,7 @@ pipeline {
 
         stage('Configure EC2 with MicroK8s') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access']]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
                     dir('zino_sec_comp_take_home/task1/microk8s/') {
                         script {
                             def inventoryFile = """
@@ -59,11 +53,10 @@ pipeline {
                             """
                             writeFile file: 'temp_inventory.ini', text: inventoryFile
                         }
-                        sshagent(credentials: ['sec_com_ass_key_pair']) {
-                            sh 'cat temp_inventory.ini'
-                            sh 'export ANSIBLE_HOST_KEY_CHECKING=False'
-                            sh "ansible-playbook ansible.yml -i temp_inventory.ini --private-key=${WORKSPACE_DIR}/.ssh/id_rsa -u ubuntu"
-                        }
+                        sh '''
+                            export ANSIBLE_HOST_KEY_CHECKING=False
+                            ansible-playbook ansible.yml -i temp_inventory.ini --private-key=${SSH_KEY} -u ubuntu
+                        '''
                     }
                 }
             }
@@ -71,14 +64,35 @@ pipeline {
 
         stage('Deploy SonarQube') {
             steps {
-                dir('zino_sec_comp_take_home/task1/sonar/') {
-                    sleep time: 60, unit: 'SECONDS'
-                    sshagent(credentials: ['sec_com_ass_key_pair']) {
-                        sh "scp -o StrictHostKeyChecking=no -r sonarqube ubuntu@${EC2_PUBLIC_IP}:/tmp"
-                        sh "ssh -o StrictHostKeyChecking=no ubuntu@${EC2_PUBLIC_IP} 'sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls'"
+                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
+                    dir('zino_sec_comp_take_home/task1/sonar/') {
+                        sh """
+                            scp -o StrictHostKeyChecking=no -r sonarqube ubuntu@${EC2_PUBLIC_IP}:/tmp
+                            ssh -o StrictHostKeyChecking=no ubuntu@${EC2_PUBLIC_IP} 'sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls'
+                        """
                     }
                 }
             }
         }
     }
+
+    post {
+        always {
+            echo "Pipeline completed."
+        }
+
+        success {
+            echo "Deployment completed successfully."
+        }
+
+        failure {
+            echo "Deployment failed! Please check the logs for more information."
+            // You can add more actions here like sending notifications (emails, Slack messages, etc.)
+        }
+
+        cleanup {
+            deleteDir()  // Clean Jenkins workspace at the end of the run
+        }
+    }
 }
+
