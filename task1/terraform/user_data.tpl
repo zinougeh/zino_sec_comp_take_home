@@ -12,12 +12,14 @@ systemctl start ssh
 snap install microk8s --classic
 microk8s.start
 
-# Add your user to the 'microk8s' group. Replace 'jenkins' with your actual username.
+# Add the Ubuntu user to the 'microk8s' group.
 usermod -a -G microk8s ubuntu
-newgrp microk8s
 
 # Enable microk8s addons
 microk8s.enable dashboard dns registry istio
 
 # Configure kubectl for the user
 microk8s.kubectl config view --raw > $HOME/.kube/config
+
+# Append the SSH public key to the authorized_keys of the Ubuntu user
+echo "${ssh_public_key}" >> /home/ubuntu/.ssh/authorized_keys
