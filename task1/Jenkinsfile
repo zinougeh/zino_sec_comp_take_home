@@ -44,19 +44,18 @@ pipeline {
 
         stage('Configure EC2 with MicroK8s') {
             steps {
-                sh "sleep 120" // wait for 2 minutes to ensure EC2 instance is ready
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
                     dir('zino_sec_comp_take_home/task1/microk8s/') {
                         script {
                             def inventoryFile = """
                                 [EC2]
-                                ${EC2_PUBLIC_IP}
+                                ${EC2_PUBLIC_IP} ansible_ssh_user=ubuntu ansible_ssh_private_key_file=${SSH_KEY}
                             """
                             writeFile file: 'temp_inventory.ini', text: inventoryFile
                         }
                         sh '''
                             export ANSIBLE_HOST_KEY_CHECKING=False
-                            ansible-playbook ansible.yml -i temp_inventory.ini --private-key=${SSH_KEY} -u ubuntu
+                            ansible-playbook ansible.yml -i temp_inventory.ini
                         '''
                     }
                 }
