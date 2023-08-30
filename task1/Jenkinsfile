@@ -34,7 +34,7 @@ pipeline {
                     dir('zino_sec_comp_take_home/task1/terraform') {
                         sh 'terraform init'
                         sh "terraform apply -var 'ssh_public_key=${SSH_PUBLIC_KEY}' -auto-approve"
-                        sleep time: 200, unit: 'SECONDS'
+                        sleep time: 400, unit: 'SECONDS'
                         script {
                             env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
                         }
