@@ -103,14 +103,17 @@ resource "aws_route_table_association" "route_table_association" {
 output "instance_id" {
   description = "ID of the EC2 instance"
   value       = aws_instance.ec2_instance.id
+  sensitive   = true
 }
 
 output "instance_public_ip" {
   description = "Public IP of the EC2 instance"
   value       = aws_eip.eip_alloc.public_ip
+  sensitive   = true
 }
 
 output "instance_private_ip" {
   description = "Private IP of the EC2 instance"
   value       = aws_instance.ec2_instance.private_ip
+  sensitive   = true
 }
