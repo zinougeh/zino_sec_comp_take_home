@@ -5,7 +5,7 @@ pipeline {
         stage('Terraform Initialization') {
             steps {
                 withCredentials(['AWS_Access']) {
-                    dir('path/to/your/terraform/code') {  // Adjust this path
+                    dir('https://github.com/zinougeh/zino_sec_comp_take_home.git') {  // Adjust this path
                         sh """
                            terraform init -input=false \
                                           -backend-config="address=${env.YOUR_BACKEND_ADDRESS}" \
