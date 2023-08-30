@@ -42,7 +42,7 @@ pipeline {
             }
         }
 
-        stage('Configure EC2 with MicroK8s') {
+       stage('Configure EC2 with MicroK8s') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
                     dir('zino_sec_comp_take_home/task1/microk8s/') {
