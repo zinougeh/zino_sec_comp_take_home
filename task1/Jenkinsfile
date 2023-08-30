@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         WORKSPACE_DIR = "${env.WORKSPACE}"
-        SSH_PUBLIC_KEY = ''  // initialize empty variable
     }
 
     stages {
@@ -17,13 +16,17 @@ pipeline {
         stage('Setup') {
             steps {
                 script {
+                    // Ensure .ssh directory exists
                     def sshDir = "${env.WORKSPACE_DIR}/.ssh"
                     if (!fileExists(sshDir)) {
                         sh "mkdir -p ${sshDir}"
                     }
 
+                    // Generate SSH key pair, only if it doesn't exist
                     if(!fileExists("${sshDir}/id_rsa.pub")) {
                         sh "ssh-keygen -t rsa -b 4096 -f ${sshDir}/id_rsa -N ''"
+                        env.SSH_PUBLIC_KEY = sh(script: "cat ${sshDir}/id_rsa.pub", returnStdout: true).trim()
+                    } else {
                         env.SSH_PUBLIC_KEY = sh(script: "cat ${sshDir}/id_rsa.pub", returnStdout: true).trim()
                     }
                 }
@@ -33,6 +36,8 @@ pipeline {
         stage('AWS Tasks') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access']]) {
+
+                    // Terraform stage
                     dir('zino_sec_comp_take_home/task1/terraform') {
                         sh 'terraform init'
                         sh "terraform apply -var 'ssh_public_key=${env.SSH_PUBLIC_KEY}' -auto-approve"
@@ -40,6 +45,7 @@ pipeline {
                         script {
                             def EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
                             env.EC2_PUBLIC_IP = EC2_PUBLIC_IP
+                            println(EC2_PUBLIC_IP)
                         }
                     }
 
