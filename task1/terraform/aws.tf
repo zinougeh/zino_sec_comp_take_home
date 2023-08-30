@@ -1,19 +1,11 @@
 provider "aws" {
-   region = "us-west-1"
+  region = "us-west-1"
 }
 
 variable "ssh_public_key" {
-    description = "SSH Public Key"
-    type        = string
-    default     = ""
-}
-
-resource "aws_key_pair" "deployer" {
-  key_name   = "sec_com_ass_key_pair"
-  public_key = var.ssh_public_key
-  lifecycle {
-    create_before_destroy = true
-  }
+  description = "SSH Public Key"
+  type        = string
+  default     = ""
 }
 
 resource "aws_vpc" "main_vpc" {
@@ -36,19 +28,21 @@ resource "aws_security_group" "allow_ssh" {
   name        = "allow_ssh"
   description = "Allow SSH inbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
+  
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
+  
   egress {
     from_port   = 0
     to_port     = 0
@@ -58,7 +52,7 @@ resource "aws_security_group" "allow_ssh" {
 }
 
 resource "aws_instance" "ec2_instance" {
-  ami                   = "ami-09d95fab7fff3776c"
+  ami                   = "ami-09d95fab7fff3776c"  # Ubuntu Server 20.04 LTS
   instance_type         = "t2.large"
   key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
