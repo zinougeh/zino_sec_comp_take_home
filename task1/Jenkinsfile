@@ -9,7 +9,7 @@ pipeline {
         stage('Initialization') {
             steps {
                 // Clean Jenkins workspace
-                cleanWs()
+                deleteDir()
                 
                 // Clone the repository
                 sh 'git clone https://github.com/zinougeh/zino_sec_comp_take_home.git'
@@ -24,7 +24,7 @@ pipeline {
                         sh "mkdir -p ${sshDir}"
                     }
                     if(!fileExists("${sshDir}/id_rsa.pub")) {
-                        sh "ssh-keygen -t rsa -b 4096 -f ${sshDir}/id_rsa -N ''"
+                        sh "ssh-keygen -t rsa -b 4096 -f ${sshDir}/id_rsa -N '' -m PEM"
                         env.SSH_PUBLIC_KEY = sh(script: "cat ${sshDir}/id_rsa.pub", returnStdout: true).trim()
                     } else {
                         env.SSH_PUBLIC_KEY = sh(script: "cat ${sshDir}/id_rsa.pub", returnStdout: true).trim()
