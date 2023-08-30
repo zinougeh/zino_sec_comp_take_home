@@ -1,5 +1,9 @@
-pipeline {
+ppipeline {
     agent any
+
+    environment {
+        SSH_DIR = "${env.WORKSPACE}/.ssh"
+    }
 
     stages {
         stage('Initialization') {
@@ -12,14 +16,14 @@ pipeline {
         stage('Setup SSH') {
             steps {
                 script {
-                    def sshDir = "${env.WORKSPACE}/.ssh"
                     sh """
-                        mkdir -p ${sshDir}
-                        if [ ! -f ${sshDir}/id_rsa ] || [ ! -f ${sshDir}/id_rsa.pub ]; then
-                            ssh-keygen -t rsa -b 4096 -f ${sshDir}/id_rsa -N '' -m PEM
+                        mkdir -p ${SSH_DIR}
+                        if [ ! -f ${SSH_DIR}/id_rsa ] || [ ! -f ${SSH_DIR}/id_rsa.pub ]; then
+                            ssh-keygen -t rsa -b 4096 -f ${SSH_DIR}/id_rsa -N '' -m PEM
                         fi
+                        chmod 600 ${SSH_DIR}/id_rsa
                     """
-                    env.SSH_PUBLIC_KEY = sh(script: "cat ${sshDir}/id_rsa.pub", returnStdout: true).trim()
+                    env.SSH_PUBLIC_KEY = sh(script: "cat ${SSH_DIR}/id_rsa.pub", returnStdout: true).trim()
                 }
             }
         }
