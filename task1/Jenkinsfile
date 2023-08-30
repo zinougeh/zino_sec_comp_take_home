@@ -1,13 +1,10 @@
 pipeline {
     agent any
 
-     stages {
+    stages {
         stage('Initialization') {
             steps {
-                // Clean Jenkins workspace
                 deleteDir()
-                
-                // Clone the repository
                 sh 'git clone https://github.com/zinougeh/zino_sec_comp_take_home.git'
             }
         }
@@ -86,12 +83,10 @@ pipeline {
 
         failure {
             echo "Deployment failed! Please check the logs for more information."
-            // You can add more actions here like sending notifications (emails, Slack messages, etc.)
         }
 
         cleanup {
-            deleteDir()  // Clean Jenkins workspace at the end of the run
+            deleteDir()
         }
     }
 }
-
