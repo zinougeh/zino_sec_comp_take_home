@@ -12,7 +12,7 @@ systemctl start ssh
 snap install microk8s --classic
 microk8s.start
 
-# Add your user to the 'microk8s' group. Replace 'YOUR_USER' with your actual username.
+# Add your user to the 'microk8s' group. Replace 'jenkins' with your actual username.
 usermod -a -G microk8s ubuntu
 newgrp microk8s
 
