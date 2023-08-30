@@ -1,11 +1,14 @@
 pipeline {
     agent any
 
-    stages {
+     stages {
         stage('Initialization') {
             steps {
-                deleteDir() // Clean Jenkins workspace
-                checkout scm // Clone the repository
+                // Clean Jenkins workspace
+                deleteDir()
+                
+                // Clone the repository
+                sh 'git clone https://github.com/zinougeh/zino_sec_comp_take_home.git'
             }
         }
 
