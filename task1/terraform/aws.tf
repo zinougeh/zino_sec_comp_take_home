@@ -64,7 +64,7 @@ resource "aws_instance" "ec2_instance" {
 }
 
 resource "aws_key_pair" "deployer" {
-  key_name   = "sec_com_ass_key_pair"
+  key_name   = "sec_com_ass_new_key_pair"
   public_key = var.ssh_public_key
 }
 
