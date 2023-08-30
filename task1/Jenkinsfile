@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        WORKSPACE_DIR = "${env.WORKSPACE}" // Use Jenkins workspace programmatically
-    }
-
     stages {
         stage('Initialization') {
             steps {
@@ -16,10 +12,10 @@ pipeline {
         stage('Setup SSH') {
             steps {
                 script {
-                    def sshDir = "${WORKSPACE_DIR}/.ssh"
+                    def sshDir = "${env.WORKSPACE}/.ssh"
                     sh """
                         mkdir -p ${sshDir}
-                        if [ ! -f ${sshDir}/id_rsa.pub ]; then
+                        if [ ! -f ${sshDir}/id_rsa ] || [ ! -f ${sshDir}/id_rsa.pub ]; then
                             ssh-keygen -t rsa -b 4096 -f ${sshDir}/id_rsa -N '' -m PEM
                         fi
                     """
