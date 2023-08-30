@@ -13,7 +13,7 @@ snap install microk8s --classic
 microk8s.start
 
 # Add your user to the 'microk8s' group. Replace 'jenkins' with your actual username.
-usermod -a -G microk8s ubuntu
+usermod -a -G microk8s jenkins
 newgrp microk8s
 
 # Enable microk8s addons
