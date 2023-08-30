@@ -1,27 +1,43 @@
 pipeline {
     agent any
 
+    environment {
+        SSH_DIR = "${env.WORKSPACE}/.ssh"
+    }
+
     stages {
-        stage('Terraform Initialization') {
+        stage('Checkout from GitHub') {
             steps {
-                withCredentials(['AWS_Access']) {
-                    dir('https://github.com/zinougeh/zino_sec_comp_take_home.git') {  // Adjust this path
-                        sh """
-                           terraform init -input=false \
-                                          -backend-config="address=${env.YOUR_BACKEND_ADDRESS}" \
-                                          -backend-config="access_key=${YOUR_ACCESS_KEY}" \
-                                          -backend-config="secret_key=${YOUR_SECRET_KEY}" 
-                        """
-                    }
+                // Use Git SCM to pull your repo
+                git 'https://github.com/zinougeh/zino_sec_comp_take_home.git'
+            }
+        }
+
+        stage('Setup SSH') {
+            steps {
+                script {
+                    sh """
+                        mkdir -p ${SSH_DIR}
+                        if [ ! -f ${SSH_DIR}/id_rsa ] || [ ! -f ${SSH_DIR}/id_rsa.pub ]; then
+                            ssh-keygen -t rsa -b 4096 -f ${SSH_DIR}/id_rsa -N '' -m PEM
+                        fi
+                        chmod 600 ${SSH_DIR}/id_rsa
+                    """
+                    env.SSH_PUBLIC_KEY = sh(script: "cat ${SSH_DIR}/id_rsa.pub", returnStdout: true).trim()
                 }
             }
         }
 
-        stage('AWS Deployment') {
+        stage('Deploy on AWS') {
             steps {
-                withCredentials([ 'AWS_Access' ]) {
-                    dir('path/to/your/terraform/code') {  // Adjust this path
-                        sh "terraform apply -input=false -auto-approve"
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access']]) {
+                    dir('zino_sec_comp_take_home/task1/terraform') {
+                        sh 'terraform init'
+                        sh "terraform apply -var 'ssh_public_key=${SSH_PUBLIC_KEY}' -auto-approve"
+                        sleep time: 200, unit: 'SECONDS'
+                        script {
+                            env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
+                        }
                     }
                 }
             }
@@ -80,4 +96,3 @@ pipeline {
         }
     }
 }
-
