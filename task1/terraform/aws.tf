@@ -35,14 +35,7 @@ resource "aws_security_group" "allow_ssh" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -66,13 +59,6 @@ resource "aws_instance" "ec2_instance" {
 resource "aws_key_pair" "deployer" {
   key_name   = "sec_com_ass_key_pair"
   public_key = var.ssh_public_key
-}
-
-resource "aws_eip" "eip_alloc" {
-  instance = aws_instance.ec2_instance.id
-  tags = {
-    Name = "EC2_INSTANCE_EIP"
-  }
 }
 
 resource "aws_internet_gateway" "main_gw" {
