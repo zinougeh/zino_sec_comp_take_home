@@ -35,12 +35,14 @@ resource "aws_security_group" "allow_ssh" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
   ingress {
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -55,7 +57,7 @@ resource "aws_instance" "ec2_instance" {
   key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
   subnet_id              = aws_subnet.main_subnet.id
-  user_data              = file("user_data.sh")
+  user_data              = file("${path.module}/user_data.sh")
   tags = {
     Name = "MicroK8s-Instance"
   }
@@ -63,7 +65,6 @@ resource "aws_instance" "ec2_instance" {
 
 resource "aws_eip" "eip_alloc" {
   instance = aws_instance.ec2_instance.id
-
   tags = {
     Name = "EC2 EIP"
   }
@@ -76,7 +77,6 @@ resource "aws_key_pair" "deployer" {
 
 resource "aws_internet_gateway" "main_gw" {
   vpc_id = aws_vpc.main_vpc.id
-
   tags = {
     Name = "Main Internet Gateway"
   }
