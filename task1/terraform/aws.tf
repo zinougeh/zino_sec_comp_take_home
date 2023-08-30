@@ -8,6 +8,14 @@ variable "ssh_public_key" {
     default     = ""
 }
 
+resource "aws_key_pair" "deployer" {
+  key_name   = "sec_com_ass_key_pair"
+  public_key = var.ssh_public_key
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
 resource "aws_vpc" "main_vpc" {
   cidr_block = "10.0.0.0/16"
   tags = {
@@ -50,7 +58,7 @@ resource "aws_security_group" "allow_ssh" {
 }
 
 resource "aws_instance" "ec2_instance" {
-  ami                   = "ami-09d95fab7fff3776c"  # Ubuntu Server 20.04 LTS
+  ami                   = "ami-09d95fab7fff3776c"
   instance_type         = "t2.large"
   key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh.id]
