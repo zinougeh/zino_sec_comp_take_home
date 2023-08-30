@@ -45,7 +45,7 @@ pipeline {
        stage('Configure EC2 with MicroK8s') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
-                    dir('zino_sec_comp_take_home/task1/microk8s/') {
+                    dir('zino_sec_comp_take_home/task1/microk8s') {
                         script {
                             def inventoryFile = """
                                 [EC2]
@@ -65,7 +65,7 @@ pipeline {
         stage('Deploy SonarQube') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
-                    dir('zino_sec_comp_take_home/task1/sonar/') {
+                    dir('zino_sec_comp_take_home/task1/sonar') {
                         sh """
                             scp -o StrictHostKeyChecking=no -i ${SSH_KEY} -r sonarqube ubuntu@${EC2_PUBLIC_IP}:/tmp
                             ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${EC2_PUBLIC_IP} 'sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls'
