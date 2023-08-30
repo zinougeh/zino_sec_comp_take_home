@@ -55,12 +55,12 @@ resource "aws_security_group" "allow_ssh_and_http" {
 }
 
 resource "aws_instance" "ec2_instance" {
-  ami                   = "ami-04d1dcfb793f6fa37" # Please verify this AMI is correct for your use-case.
+  ami                   = "ami-04d1dcfb793f6fa37"
   instance_type         = "t2.large"
   key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh_and_http.id]
   subnet_id              = aws_subnet.main_subnet.id
-  user_data              = templatefile("${path.module}/user_data.tpl", { ssh_public_key = var.ssh_public_key }) # Using relative path from the Terraform module.
+  user_data              = templatefile("${path.module}/user_data.sh", { ssh_public_key = var.ssh_public_key })
   tags = {
     Name = "MicroK8s-Instance"
   }
