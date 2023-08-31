@@ -74,8 +74,13 @@ resource "aws_eip" "eip_alloc" {
 }
 
 resource "aws_key_pair" "deployer" {
-  key_name   = "new_unique_key_name"
-  public_key = var.ssh_public_key
+  key_name   = "deployer-${timestamp()}" # Using a timestamp to ensure uniqueness
+  public_key = "YOUR_PUBLIC_KEY"
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes  = [key_name, public_key] # This means Terraform won't try to recreate the resource if these attributes change
+  }
 }
 
 resource "aws_internet_gateway" "main_gw" {
