@@ -10,6 +10,7 @@ pipeline {
             steps {
                 deleteDir()
                 sh 'git clone https://github.com/zinougeh/zino_sec_comp_take_home.git'
+                sh 'terraform import aws_key_pair.deployer sec_com_ass_key_pair'
             }
         }
 
