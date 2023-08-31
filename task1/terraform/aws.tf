@@ -55,7 +55,7 @@ resource "aws_security_group" "allow_ssh_and_http" {
 }
 
 resource "aws_instance" "ec2_instance" {
-  ami                   = "ami-0c65adc9a5c1b5d7c" 
+  ami                   = "ami-0261755bbcb8c4a84" 
   instance_type         = "t2.large"
   key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh_and_http.id]
