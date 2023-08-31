@@ -2,6 +2,21 @@ provider "aws" {
   region = "us-west-1"
 }
 
+{
+  "Version": "2012-10-17",
+  "Statement": [
+      {
+          "Effect": "Allow",
+          "Action": [
+              "ec2:RunInstances",
+              "ec2:DescribeInstances",
+              "ec2:TerminateInstances"
+          ],
+          "Resource": "*"
+      }
+  ]
+}
+
 variable "ssh_public_key" {
   description = "SSH Public Key"
   type        = string
