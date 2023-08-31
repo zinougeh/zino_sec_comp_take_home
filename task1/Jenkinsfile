@@ -18,7 +18,7 @@ pipeline {
                 script {
                     sh """
                         mkdir -p ${SSH_DIR}
-                        if [ ! -f ${SSH_DIR}/id_rsa ] || [ ! -f ${SSH_DIR}/id_rsa.pub ]; then
+                        if [ ! -f ${SSH_DIR}/id_rsa.pub ]; then
                             ssh-keygen -t rsa -b 4096 -f ${SSH_DIR}/id_rsa -N '' -m PEM
                         fi
                         chmod 600 ${SSH_DIR}/id_rsa
@@ -43,7 +43,7 @@ pipeline {
             }
         }
 
-       stage('Configure EC2 with MicroK8s') {
+        stage('Configure EC2 with MicroK8s') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
                     dir('zino_sec_comp_take_home/task1/microk8s') {
