@@ -74,12 +74,12 @@ resource "aws_eip" "eip_alloc" {
 }
 
 resource "aws_key_pair" "deployer" {
-  key_name   = "deployer-${timestamp()}" # Using a timestamp to ensure uniqueness
-  public_key = "YOUR_PUBLIC_KEY"
+  key_name   = "deployer-${formatdate("YYYY-MM-DDTHH:mm:ssZ", timestamp())}"
+  public_key = file("${path.module}/path_to_your_public_key_file.pub")
 
   lifecycle {
     prevent_destroy = true
-    ignore_changes  = [key_name, public_key] # This means Terraform won't try to recreate the resource if these attributes change
+    ignore_changes  = [key_name, public_key]
   }
 }
 
