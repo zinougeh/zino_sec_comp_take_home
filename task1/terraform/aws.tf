@@ -74,7 +74,7 @@ resource "aws_eip" "eip_alloc" {
 }
 
 resource "aws_key_pair" "deployer" {
-  key_name   = "sec_com_ass_key_pair"
+  key_name   = "new_unique_key_name"
   public_key = var.ssh_public_key
 }
 
