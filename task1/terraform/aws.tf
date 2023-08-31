@@ -74,13 +74,8 @@ resource "aws_eip" "eip_alloc" {
 }
 
 resource "aws_key_pair" "deployer" {
-  key_name   = "deployer-${formatdate("YYYY-MM-DDTHH:mm:ssZ", timestamp())}"
-  public_key = file("${path.module}/id_rsa.pub")
-
-  lifecycle {
-    prevent_destroy = true
-    ignore_changes  = [key_name, public_key]
-  }
+  key_name   = "deployer-key"
+  public_key = file(var.public_key_path)
 }
 
 resource "aws_internet_gateway" "main_gw" {
