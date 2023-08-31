@@ -10,7 +10,6 @@ pipeline {
             steps {
                 deleteDir()
                 sh 'git clone https://github.com/zinougeh/zino_sec_comp_take_home.git'
-                sh 'terraform import aws_key_pair.deployer sec_com_ass_key_pair'
             }
         }
 
@@ -33,6 +32,7 @@ pipeline {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access']]) {
                     dir('zino_sec_comp_take_home/task1/terraform') {
+                        sh 'terraform import aws_key_pair.deployer sec_com_ass_key_pair'
                         sh 'terraform init'
                         sh "terraform apply -var 'ssh_public_key=${SSH_PUBLIC_KEY}' -auto-approve"
                         sleep time: 300, unit: 'SECONDS'
