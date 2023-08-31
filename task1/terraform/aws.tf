@@ -75,7 +75,7 @@ resource "aws_eip" "eip_alloc" {
 
 resource "aws_key_pair" "deployer" {
   key_name   = "deployer-${formatdate("YYYY-MM-DDTHH:mm:ssZ", timestamp())}"
-  public_key = file("${path.module}/path_to_your_public_key_file.pub")
+  public_key = file("${path.module}/id_rsa.pub")
 
   lifecycle {
     prevent_destroy = true
