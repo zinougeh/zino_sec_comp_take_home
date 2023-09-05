@@ -45,7 +45,7 @@ pipeline {
 
         stage('Configure EC2 with MicroK8s') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'jenkins', keyFileVariable: 'SSH_KEY')]) {
                     dir('zino_sec_comp_take_home/task1/microk8s') {
                         sh """
                             export ANSIBLE_HOST_KEY_CHECKING=False
@@ -60,7 +60,7 @@ pipeline {
 
         stage('Deploy SonarQube') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'jenkins', keyFileVariable: 'SSH_KEY')]) {
                     dir('zino_sec_comp_take_home/task1/sonar') {
                         sleep time: 60, unit: 'SECONDS'
                         sh """
