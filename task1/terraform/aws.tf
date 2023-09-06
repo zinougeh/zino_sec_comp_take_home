@@ -29,7 +29,6 @@ resource "aws_security_group" "allow_ssh_and_http" {
   description = "Allow SSH and HTTP inbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
   
-  # SSH ingress
   ingress {
     from_port   = 22
     to_port     = 22
@@ -37,7 +36,6 @@ resource "aws_security_group" "allow_ssh_and_http" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   
-  # HTTP ingress
   ingress {
     from_port   = 80
     to_port     = 80
@@ -45,7 +43,6 @@ resource "aws_security_group" "allow_ssh_and_http" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Egress
   egress {
     from_port   = 0
     to_port     = 0
@@ -91,7 +88,6 @@ resource "aws_route_table" "route_table" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.main_gw.id
   }
-
   tags = {
     Name = "Main Route Table"
   }
@@ -119,3 +115,4 @@ output "instance_private_ip" {
   value       = aws_instance.ec2_instance.private_ip
   sensitive   = true
 }
+
