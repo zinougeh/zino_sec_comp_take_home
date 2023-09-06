@@ -4,7 +4,6 @@
   become: yes  # If you need to escalate privileges to run the script
 
   tasks:
-    - name: Install the MicroK8s
       tasks:
     - name: Wait for SSH to become available
       wait_for:
