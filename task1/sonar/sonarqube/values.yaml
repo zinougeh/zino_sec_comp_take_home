@@ -9,6 +9,6 @@ sonarqube:
 
 service:
   type: NodePort
-  nodePort: 80
+  nodePort: 30080
 
-ingressEnabled: true
+ingressEnabled: false
