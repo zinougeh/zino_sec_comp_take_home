@@ -33,7 +33,7 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access']]) {
                     dir('zino_sec_comp_take_home/task1/terraform') {
                         sh 'terraform init'
-                        sh "terraform apply -var 'ssh_public_key=${SSH_PUBLIC_KEY}' -auto-approve"
+                        sh 'terraform apply -var="ssh_public_key=${SSH_PUBLIC_KEY}" -auto-approve'
                         sleep time: 900, unit: 'SECONDS'
                         script {
                             env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
@@ -50,7 +50,7 @@ pipeline {
                         sh """
                             export ANSIBLE_HOST_KEY_CHECKING=False
                             echo '[EC2]' > temp_inventory.ini
-                            echo '${EC2_PUBLIC_IP} ansible_ssh_user=jenkins ansible_ssh_private_key_file=${SSH_KEY}' >> temp_inventory.ini
+                            echo '${EC2_PUBLIC_IP} ansible_ssh_user=ubuntu ansible_ssh_private_key_file=${SSH_KEY}' >> temp_inventory.ini
                             ansible-playbook ansible.yml -i temp_inventory.ini
                         """
                     }
@@ -64,8 +64,8 @@ pipeline {
                     dir('zino_sec_comp_take_home/task1/sonar') {
                         sleep time: 900, unit: 'SECONDS'
                         sh """
-                            scp -o StrictHostKeyChecking=no -i ${SSH_KEY} -r sonarqube ubuntu@${EC2_PUBLIC_IP}:/tmp
-                            ssh -o StrictHostKeyChecking=no -i ${SSH_KEY} ubuntu@${EC2_PUBLIC_IP} 'sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls'
+                            scp -o StrictHostKeyChecking=no -i "${SSH_KEY}" -r sonarqube ubuntu@${EC2_PUBLIC_IP}:/tmp
+                            ssh -o StrictHostKeyChecking=no -i "${SSH_KEY}" ubuntu@${EC2_PUBLIC_IP} 'sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls'
                         """
                     }
                 }
