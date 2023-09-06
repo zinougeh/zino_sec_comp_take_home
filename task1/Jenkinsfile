@@ -47,16 +47,16 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'deployer-key', keyFileVariable: 'SSH_KEY')]) {
                     dir('zino_sec_comp_take_home/task1/microk8s') {
-                        sh """
-                            export ANSIBLE_HOST_KEY_CHECKING=False
-                            echo '[EC2]' > temp_inventory.ini
-                            echo '${EC2_PUBLIC_IP} ansible_ssh_user=ubuntu ansible_ssh_private_key_file=${SSH_KEY}' >> temp_inventory.ini
-                            ansible-playbook ansible.yml -i temp_inventory.ini
-                        """
-                    }
+                    sh '''
+                    export ANSIBLE_HOST_KEY_CHECKING=False
+                    echo '[EC2]' > temp_inventory.ini
+                    echo "$EC2_PUBLIC_IP ansible_ssh_user=jenkins ansible_ssh_private_key_file=$SSH_KEY" >> temp_inventory.ini
+                    ansible-playbook ansible.yml -i temp_inventory.ini
+                '''
                 }
             }
         }
+    }
 
         stage('Deploy SonarQube') {
             steps {
