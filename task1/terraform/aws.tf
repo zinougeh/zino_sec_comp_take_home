@@ -2,10 +2,10 @@ provider "aws" {
   region = "us-west-1"
 }
 
-variable "public_key_path" {
-  description = "Path to the SSH Public Key"
+variable "ssh_public_key" {
+  description = "SSH public key"
   type        = string
-  default     = "~/.ssh/id_rsa.pub"
+  default     = ""  # Optional: Set a default value if needed
 }
 
 resource "aws_vpc" "main_vpc" {
