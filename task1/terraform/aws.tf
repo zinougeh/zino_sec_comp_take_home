@@ -60,7 +60,7 @@ resource "aws_instance" "ec2_instance" {
   key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh_and_http.id]
   subnet_id              = aws_subnet.main_subnet.id
-  user_data              = templatefile("${path.module}/user_data.sh", { ssh_public_key = file(var.public_key_path) }) 
+  user_data              = templatefile("${path.module}/user_data.sh", { ssh_public_key = var.ssh_public_key }) 
   tags = {
     Name = "MicroK8s-Instance"
   }
