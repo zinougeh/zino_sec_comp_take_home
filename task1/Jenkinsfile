@@ -51,7 +51,7 @@ pipeline {
                         dir('zino_sec_comp_take_home/task1/microk8s') {
                              sh 'export ANSIBLE_HOST_KEY_CHECKING=False'
                              sh "echo '[EC2]' > temp_inventory.ini"
-                             sh "echo ${EC2_PUBLIC_IP} ansible_ssh_user=jenkins ansible_ssh_private_key_file=$SSH_KEY >> temp_inventory.ini"
+                             sh "echo ${EC2_PUBLIC_IP} ansible_ssh_user=jenkins ansible_ssh_private_key_file=$SSH_KEY_PATH >> temp_inventory.ini"
                              sh 'ansible-playbook ansible.yml -i temp_inventory.ini'
                         }
                     }
