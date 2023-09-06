@@ -29,26 +29,23 @@ pipeline {
         }
 
         stage('Deploy on AWS') {
-            stage('Deploy on AWS') {
-    steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access']]) {
-            dir('zino_sec_comp_take_home/task1/terraform') {
-                sh 'terraform init'
-                sh """
-                    terraform apply \\
-                    -var 'ssh_public_key=${SSH_PUBLIC_KEY}' \\
-                    -var 'public_key_path=${SSH_DIR}/id_rsa.pub' \\
-                    -auto-approve
-                """
-                sleep time: 900, unit: 'SECONDS'
-                script {
-                    env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access']]) {
+                    dir('zino_sec_comp_take_home/task1/terraform') {
+                        sh 'terraform init'
+                        sh """
+                            terraform apply \\
+                            -var 'ssh_public_key=${SSH_PUBLIC_KEY}' \\
+                            -auto-approve
+                        """
+                        sleep time: 900, unit: 'SECONDS'
+                        script {
+                            env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
+                        }
                     }
                 }
             }
         }
-    }
-
 
         stage('Configure EC2 with MicroK8s') {
             steps {
@@ -61,11 +58,11 @@ pipeline {
                                 echo '${EC2_PUBLIC_IP} ansible_ssh_user=jenkins ansible_ssh_private_key_file=$SSH_KEY_PATH' >> temp_inventory.ini
                                 ansible-playbook ansible.yml -i temp_inventory.ini
                             """
+                        }
                     }
                 }
             }
         }
-    }
 
         stage('Deploy SonarQube') {
             steps {
@@ -85,6 +82,7 @@ pipeline {
     post {
         always {
             echo "Pipeline completed."
+            deleteDir()  // Moved to always for guaranteed execution
         }
 
         success {
@@ -94,9 +92,5 @@ pipeline {
         failure {
             echo "Deployment failed! Please check the logs for more information."
         }
-
-        cleanup {
-            deleteDir()
-            }
-        }
     }
+}
