@@ -60,7 +60,7 @@ pipeline {
                         sh 'ls'
                         sh 'export ANSIBLE_HOST_KEY_CHECKING=False'
                         ansiblePlaybook(
-                            credentialsId: 'jenkins',
+                            credentialsId: 'deployer-key',
                             inventory: 'temp_inventory.ini',
                             playbook: 'ansible.yml',
                             hostKeyChecking: 'false'
