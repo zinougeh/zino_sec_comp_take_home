@@ -23,48 +23,21 @@ sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 30080
 sudo sh -c "iptables-save > /etc/iptables/rules.v4"
 
 
-# create user for installations
-sudo useradd -m jenkins # `-m` flag to create home directory
+# Create user and its home directory
+sudo useradd jenkins -m
 
-# Ensure the .ssh directory exists for the jenkins user
+# Ensure the .ssh directory exists for both users
+sudo mkdir -p /home/ubuntu/.ssh
 sudo mkdir -p /home/jenkins/.ssh
 
-# Append the SSH public key to the authorized_keys of the Jenkins user
-sudo echo "${ssh_public_key}" >> /home/jenkins/.ssh/authorized_keys
-
-# Set correct permissions for jenkins' .ssh directory and authorized_keys file
-sudo chown -R jenkins:jenkins /home/jenkins/.ssh
-sudo chmod 700 /home/jenkins/.ssh
-sudo chmod 600 /home/jenkins/.ssh/authorized_keys
-
-# Check if .ssh directory exists, if not create it
-sudo [ -d /home/ubuntu/.ssh ] || sudo mkdir /home/ubuntu/.ssh
-
 # Append the SSH public key to the authorized_keys of the Ubuntu user
-echo "${ssh_public_key}" | sudo tee -a /home/ubuntu/.ssh/authorized_keys
-
-# Check if .ssh directory exists, if not create it
-sudo [ -d /home/ubuntu/.ssh ] || sudo mkdir /home/jenkins/.ssh
-
-# Append the SSH public key to the authorized_keys of the Ubuntu user
-echo "${ssh_public_key}" | sudo tee -a /home/jenkins/.ssh/authorized_keys
-
-# Append the SSH public key to the authorized_keys of the Ubuntu user
-#sudo echo "${ssh_public_key}" >> /home/ubuntu/.ssh/authorized_keys
-
-# Append the SSH public key to the authorized_keys of the Ubuntu user
+sudo echo "${ssh_public_key}" >> /home/ubuntu/.ssh/authorized_keys
 sudo echo "${ssh_public_key}" >> /home/jenkins/.ssh/authorized_keys
 
 # Set correct permissions
 sudo chmod 700 /home/ubuntu/.ssh
-
-# Set correct permissions for the authorized_keys file
-sudo chmod 600 /home/ubuntu/.ssh/authorized_keys
-
-# Set correct permissions
 sudo chmod 700 /home/jenkins/.ssh
-
-# Set correct permissions for the authorized_keys file
+sudo chmod 600 /home/ubuntu/.ssh/authorized_keys
 sudo chmod 600 /home/jenkins/.ssh/authorized_keys
 
 #Install microk8s
