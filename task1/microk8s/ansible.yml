@@ -5,6 +5,20 @@
 
   tasks:
     - name: Install the MicroK8s
+      tasks:
+    - name: Wait for SSH to become available
+      wait_for:
+        host: "{{ ansible_host }}"
+        port: 22
+        delay: 10
+        timeout: 300
+      delegate_to: localhost
+
+    - name: Ensure the SSH key is in authorized_keys
+      authorized_key:
+        user: jenkins
+        state: present
+        key: "{{ lookup('file', '/var/lib/jenkins/.ssh/id_rsa.pub') }}"
       shell: |
         # Install microk8s
         echo "Inside snap install"
