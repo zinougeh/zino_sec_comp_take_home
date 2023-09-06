@@ -2,10 +2,10 @@ provider "aws" {
   region = "us-west-1"
 }
 
-variable "ssh_public_key" {
-  description = "SSH Public Key"
+variable "public_key_path" {
+  description = "Path to the SSH Public Key"
   type        = string
-  default     = ""
+  default     = "~/.ssh/id_rsa.pub"
 }
 
 resource "aws_vpc" "main_vpc" {
@@ -60,7 +60,7 @@ resource "aws_instance" "ec2_instance" {
   key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh_and_http.id]
   subnet_id              = aws_subnet.main_subnet.id
-  user_data              = templatefile("${path.module}/user_data.sh", { ssh_public_key = var.ssh_public_key }) 
+  user_data              = templatefile("${path.module}/user_data.sh", { ssh_public_key = file(var.public_key_path) }) 
   tags = {
     Name = "MicroK8s-Instance"
   }
