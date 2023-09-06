@@ -24,7 +24,18 @@ sudo sh -c "iptables-save > /etc/iptables/rules.v4"
 
 
 # create user for installations
-sudo useradd /home/jenkins
+sudo useradd -m jenkins # `-m` flag to create home directory
+
+# Ensure the .ssh directory exists for the jenkins user
+sudo mkdir -p /home/jenkins/.ssh
+
+# Append the SSH public key to the authorized_keys of the Jenkins user
+sudo echo "${ssh_public_key}" >> /home/jenkins/.ssh/authorized_keys
+
+# Set correct permissions for jenkins' .ssh directory and authorized_keys file
+sudo chown -R jenkins:jenkins /home/jenkins/.ssh
+sudo chmod 700 /home/jenkins/.ssh
+sudo chmod 600 /home/jenkins/.ssh/authorized_keys
 
 # Check if .ssh directory exists, if not create it
 sudo [ -d /home/ubuntu/.ssh ] || sudo mkdir /home/ubuntu/.ssh
