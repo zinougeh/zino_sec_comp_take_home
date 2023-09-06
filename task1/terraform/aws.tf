@@ -2,6 +2,12 @@ provider "aws" {
   region = "us-west-1"
 }
 
+variable "public_key_path" {
+  description = "Path to the SSH Public Key"
+  type        = string
+  default     = "~/.ssh/id_rsa.pub"
+}
+
 resource "aws_vpc" "main_vpc" {
   cidr_block = "10.0.0.0/16"
   tags = {
