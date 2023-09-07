@@ -13,27 +13,12 @@ pipeline {
             }
         }
 
-        stage('Setup SSH') {
-            steps {
-                script {
-                    sh """
-                        mkdir -p ${SSH_DIR}
-                        if [ ! -f ${SSH_DIR}/id_rsa ] || [ ! -f ${SSH_DIR}/id_rsa.pub ]; then
-                            ssh-keygen -t rsa -b 4096 -f ${SSH_DIR}/id_rsa -N '' -m PEM
-                        fi
-                        chmod 600 ${SSH_DIR}/id_rsa
-                    """
-                    env.SSH_PUBLIC_KEY = sh(script: "cat ${SSH_DIR}/id_rsa.pub", returnStdout: true).trim()
-                }
-            }
-        }
-
         stage('Deploy on AWS') {
             steps {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access']]) {
                     dir('zino_sec_comp_take_home/task1/terraform') {
                         sh 'terraform init'
-                        sh "terraform apply -var 'ssh_public_key=${env.SSH_PUBLIC_KEY}' -auto-approve"
+                        sh 'terraform apply -auto-approve'
                         sleep time: 900, unit: 'SECONDS'
                         script {
                             env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
@@ -43,17 +28,13 @@ pipeline {
             }
         }
 
-
         stage('Configure EC2 with MicroK8s') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'deployer-key', keyFileVariable: 'SSH_KEY')]) {
-                    withEnv(["SSH_KEY_PATH=$SSH_KEY"]) {
-                        dir('zino_sec_comp_take_home/task1/microk8s') {
-                             sh 'export ANSIBLE_HOST_KEY_CHECKING=False'
-                             sh "echo '[EC2]' > temp_inventory.ini"
-                             sh "echo ${EC2_PUBLIC_IP} ansible_ssh_user=jenkins ansible_ssh_private_key_file=$SSH_KEY >> temp_inventory.ini"
-                             sh 'ansible-playbook ansible.yml -i temp_inventory.ini'
-                        }
+                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
+                    dir('zino_sec_comp_take_home/task1/microk8s') {
+                         sh 'echo [EC2] > temp_inventory.ini'
+                         sh "echo ${EC2_PUBLIC_IP} ansible_ssh_user=jenkins ansible_ssh_private_key_file=${SSH_KEY} >> temp_inventory.ini"
+                         sh 'ansible-playbook ansible.yml -i temp_inventory.ini'
                     }
                 }
             }
@@ -61,7 +42,7 @@ pipeline {
 
         stage('Deploy SonarQube') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'deployer-key', keyFileVariable: 'SSH_KEY')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
                     dir('zino_sec_comp_take_home/task1/sonar') {
                         sleep time: 900, unit: 'SECONDS'
                         sh """
