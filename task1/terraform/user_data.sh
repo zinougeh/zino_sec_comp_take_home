@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 #Update and upgrade system packages
 sudo apt-get update -y && apt-get upgrade -y
 
@@ -35,6 +37,20 @@ echo "${ssh_public_key}" | sudo tee -a /home/ubuntu/.ssh/authorized_keys
 echo "${ssh_public_key}" | sudo tee -a /home/jenkins/.ssh/authorized_keys
 echo "${ssh_public_key} jenkins" >> /home/jenkins/.ssh/authorized_keys
 
+# Setup SSH for jenkins user
+
+sudo chown -R jenkins:jenkins /home/jenkins/.ssh
+sudo chmod 700 /home/jenkins/.ssh
+sudo chmod 600 /home/jenkins/.ssh/authorized_keys
+
+# Allow jenkins user to have passwordless sudo capabilities
+echo "jenkins ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
+
+# Ensure that PasswordAuthentication is set to no for sshd_config
+sudo sed -i "s/PasswordAuthentication yes/PasswordAuthentication no/g" /etc/ssh/sshd_config
+sudo sed -i "s/PermitRootLogin yes/PermitRootLogin no/g" /etc/ssh/sshd_config
+sudo sed -i "s/#AuthorizedKeysFile/AuthorizedKeysFile/g" /etc/ssh/sshd_config
+sudo service sshd restart
 
 # Set correct permissions
 sudo chmod 700 /home/ubuntu/.ssh
