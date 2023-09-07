@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         SSH_DIR = "${env.WORKSPACE}/.ssh"
+        SSH_PUBLIC_KEY_PATH = "~/.ssh/id_rsa.pub" // Ensure this path points to the Jenkins SSH public key
     }
 
     stages {
