@@ -8,38 +8,24 @@ variable "ssh_public_key" {
 }
 
 resource "aws_key_pair" "deployer" {
-  key_name   = "deployer-key"
+  key_name   = "sec_com_ass_key_pair"
   public_key = var.ssh_public_key
 }
 
-resource "aws_vpc" "main_vpc" {
-  cidr_block = "10.0.0.0/16"
-  tags = {
-    Name = "Main VPC"
-  }
-}
-
-resource "aws_subnet" "main_subnet" {
-  vpc_id                  = aws_vpc.main_vpc.id
-  cidr_block              = "10.0.1.0/24"
-  map_public_ip_on_launch = true
-  tags = {
-    Name = "Main Subnet"
-  }
-}
+# Assuming VPC exists, no changes made to VPC resource definition
 
 resource "aws_security_group" "allow_ssh_and_http" {
   name        = "allow_ssh_and_http"
   description = "Allow SSH and HTTP inbound traffic"
   vpc_id      = aws_vpc.main_vpc.id
-  
+
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   ingress {
     from_port   = 80
     to_port     = 80
@@ -60,8 +46,9 @@ resource "aws_instance" "ec2_instance" {
   instance_type         = "t2.large"
   key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh_and_http.id]
-  subnet_id              = aws_subnet.main_subnet.id
+  subnet_id              = "sec_comp_subnet"  # Use the existing subnet ID here
   user_data              = templatefile("${path.module}/user_data.sh", { ssh_public_key = var.ssh_public_key })
+
   tags = {
     Name = "MicroK8s-Instance"
   }
@@ -69,6 +56,7 @@ resource "aws_instance" "ec2_instance" {
 
 resource "aws_eip" "eip_alloc" {
   instance = aws_instance.ec2_instance.id
+
   tags = {
     Name = "EC2 EIP"
   }
