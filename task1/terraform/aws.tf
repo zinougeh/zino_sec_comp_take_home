@@ -5,7 +5,11 @@ provider "aws" {
 variable "ssh_public_key" {
   description = "SSH public key"
   type        = string
-  default     = ""  # Optional: Set a default value if needed
+}
+
+resource "aws_key_pair" "deployer" {
+  key_name   = "deployer-key"
+  public_key = var.ssh_public_key
 }
 
 resource "aws_vpc" "main_vpc" {
@@ -52,12 +56,12 @@ resource "aws_security_group" "allow_ssh_and_http" {
 }
 
 resource "aws_instance" "ec2_instance" {
-  ami                   = "ami-04d1dcfb793f6fa37" 
+  ami                   = "ami-04d1dcfb793f6fa37"
   instance_type         = "t2.large"
   key_name              = aws_key_pair.deployer.key_name
   vpc_security_group_ids = [aws_security_group.allow_ssh_and_http.id]
   subnet_id              = aws_subnet.main_subnet.id
-  user_data              = templatefile("${path.module}/user_data.sh", { ssh_public_key = var.ssh_public_key }) 
+  user_data              = templatefile("${path.module}/user_data.sh", { ssh_public_key = var.ssh_public_key })
   tags = {
     Name = "MicroK8s-Instance"
   }
@@ -68,11 +72,6 @@ resource "aws_eip" "eip_alloc" {
   tags = {
     Name = "EC2 EIP"
   }
-}
-
-resource "aws_key_pair" "deployer" {
-  key_name   = "deployer-key"
-  public_key = var.ssh_public_key
 }
 
 resource "aws_internet_gateway" "main_gw" {
@@ -88,6 +87,7 @@ resource "aws_route_table" "route_table" {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.main_gw.id
   }
+
   tags = {
     Name = "Main Route Table"
   }
@@ -101,18 +101,14 @@ resource "aws_route_table_association" "route_table_association" {
 output "instance_id" {
   description = "ID of the EC2 instance"
   value       = aws_instance.ec2_instance.id
-  sensitive   = true
 }
 
 output "instance_public_ip" {
   description = "Public IP of the EC2 instance"
   value       = aws_eip.eip_alloc.public_ip
-  sensitive   = true
 }
 
 output "instance_private_ip" {
   description = "Private IP of the EC2 instance"
   value       = aws_instance.ec2_instance.private_ip
-  sensitive   = true
 }
-
