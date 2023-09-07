@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         SSH_DIR = "${env.WORKSPACE}/.ssh"
-        SSH_PUBLIC_KEY_PATH = "~/.ssh/id_rsa.pub" // Ensure this path points to the Jenkins SSH public key
     }
 
     stages {
@@ -15,27 +14,30 @@ pipeline {
         }
 
         stage('Deploy on AWS') {
-    steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access'], 
-                             [credentialsId: 'sec_com_ass_key_pair', type: 'SSHUserPrivateKey', variable: 'SSH_CREDENTIALS']]) {
-                dir('zino_sec_comp_take_home/task1/terraform') {
-                    sh 'terraform init'
-                    sh "terraform apply -auto-approve -var=\"ssh_public_key=\$(echo ${SSH_CREDENTIALS})\""
-                    sleep time: 900, unit: 'SECONDS'
-                    script {
-                        env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
+            steps {
+                withCredentials([
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access'],
+                    [credentialsId: 'sec_com_ass_key_pair', type: 'SSHUserPrivateKey', variable: 'SSH_CREDENTIALS']
+                ]) {
+                    dir('zino_sec_comp_take_home/task1/terraform') {
+                        sh 'terraform init'
+                        sh "terraform apply -auto-approve -var=\"ssh_public_key=\$(echo ${SSH_CREDENTIALS})\""
+                        sleep time: 900, unit: 'SECONDS'
+                        script {
+                            env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
+                        }
                     }
                 }
             }
         }
-    }
+
         stage('Configure EC2 with MicroK8s') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
                     dir('zino_sec_comp_take_home/task1/microk8s') {
-                         sh 'echo [EC2] > temp_inventory.ini'
-                         sh "echo ${EC2_PUBLIC_IP} ansible_ssh_user=jenkins ansible_ssh_private_key_file=${SSH_KEY} >> temp_inventory.ini"
-                         sh 'ansible-playbook ansible.yml -i temp_inventory.ini'
+                        sh 'echo [EC2] > temp_inventory.ini'
+                        sh "echo ${EC2_PUBLIC_IP} ansible_ssh_user=jenkins ansible_ssh_private_key_file=${SSH_KEY} >> temp_inventory.ini"
+                        sh 'ansible-playbook ansible.yml -i temp_inventory.ini'
                     }
                 }
             }
@@ -59,7 +61,7 @@ pipeline {
     post {
         always {
             echo "Pipeline completed."
-            deleteDir()  // Moved to always for guaranteed execution
+            deleteDir()
         }
 
         success {
