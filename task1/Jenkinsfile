@@ -16,8 +16,8 @@ pipeline {
         stage('Deploy on AWS') {
             steps {
                 withCredentials([
-                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access'],
-                    [credentialsId: 'sec_com_ass_key_pair', type: 'SSHUserPrivateKey', variable: 'SSH_CREDENTIALS']
+                    [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'],
+                    sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')
                 ]) {
                     dir('zino_sec_comp_take_home/task1/terraform') {
                         sh 'terraform init'
