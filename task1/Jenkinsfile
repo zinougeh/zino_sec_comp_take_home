@@ -31,7 +31,7 @@ pipeline {
             }
         }
 
-        stage('Configure jenkins user on EC2 instance') {
+        stage('Ansible to Configure jenkins user on EC2 instance') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
                     sh """
@@ -59,7 +59,7 @@ pipeline {
             }
         }
         
-        stage('Deploy SonarQube on Micro8s') {
+        stage('Helm SonarQube on Micro8s Deployment') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
                     dir('zino_sec_comp_take_home/task1/sonar') {
