@@ -13,7 +13,7 @@ pipeline {
             }
         }
 
-        stage('Deploy on AWS') {
+        stage('AWS Infra Deployment via terraform') {
             steps {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'],
@@ -30,7 +30,7 @@ pipeline {
             }
         }
 
-        stage('Configure EC2 with MicroK8s') {
+        stage('Ansible Configures MicroK8s on EC2') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
                     sh 'mkdir -p $SSH_DIR'
