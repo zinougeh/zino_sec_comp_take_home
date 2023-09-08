@@ -27,7 +27,7 @@ sudo chmod 600 /home/jenkins/.ssh/authorized_keys
 # Allow jenkins user to have passwordless sudo capabilities
 echo "jenkins ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
 
-# SSH server config
+# SSH server config to deny password authentication
 sudo sed -i "s/PasswordAuthentication yes/PasswordAuthentication no/g" /etc/ssh/sshd_config
 sudo sed -i "s/PermitRootLogin yes/PermitRootLogin no/g" /etc/ssh/sshd_config
 sudo service sshd restart
