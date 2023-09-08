@@ -62,7 +62,7 @@ resource "aws_eip" "eip_alloc" {
   }
 }
 
-resource "aws_internet_gateway" "main_gw" {
+//resource "aws_internet_gateway" "main_gw" {
   vpc_id = "vpc-0b2b089d46f9cbb7d" # Direct VPC ID used
   tags = {
     Name = "Main Internet Gateway"
@@ -84,7 +84,7 @@ resource "aws_route_table" "route_table" {
 resource "aws_route_table_association" "route_table_association" {
   subnet_id      = aws_subnet.main_subnet.id
   route_table_id = aws_route_table.route_table.id
-}
+}//
 
 output "instance_id" {
   description = "ID of the EC2 instance"
