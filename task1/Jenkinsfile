@@ -31,19 +31,32 @@ pipeline {
             }
         }
 
-        stage('Configure EC2 with MicroK8s') {
-          steps {
-            withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-              sh 'mkdir -p $SSH_DIR'
-              sh 'cp $SSH_KEY_PATH $SSH_DIR/id_rsa'
-              sh 'chmod 600 $SSH_DIR/id_rsa' // Ensure proper permissions
-              dir('zino_sec_comp_take_home/task1/microk8s') {
-                sh 'echo [EC2] > temp_inventory.ini'
-                sh "echo ${EC2_PUBLIC_IP} ansible_ssh_user=jenkins ansible_ssh_private_key_file=$SSH_DIR/id_rsa >> temp_inventory.ini"
-                sh 'ansible-playbook ansible.yml -i temp_inventory.ini'
-              }
+        stage('Configure EC2') {
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no -i "$SSH_KEY_PATH" ubuntu@${EC2_PUBLIC_IP} "sudo adduser --quiet --disabled-password --shell /bin/bash --home /var/lib/jenkins --gecos 'Jenkins' jenkins"
+                        ssh -o StrictHostKeyChecking=no -i "$SSH_KEY_PATH" ubuntu@${EC2_PUBLIC_IP} "sudo mkdir -p /var/lib/jenkins/.ssh"
+                        scp -o StrictHostKeyChecking=no -i "$SSH_KEY_PATH" $SSH_DIR/id_rsa.pub ubuntu@${EC2_PUBLIC_IP}:/var/lib/jenkins/.ssh/authorized_keys
+                        ssh -o StrictHostKeyChecking=no -i "$SSH_KEY_PATH" ubuntu@${EC2_PUBLIC_IP} "sudo chown -R jenkins:jenkins /var/lib/jenkins/.ssh; sudo chmod 700 /var/lib/jenkins/.ssh; sudo chmod 600 /var/lib/jenkins/.ssh/authorized_keys"
+                    """
+                }
             }
-          }
+        }
+
+        stage('Configure EC2 with MicroK8s') {
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
+                    sh 'mkdir -p $SSH_DIR'
+                    sh 'cp $SSH_KEY_PATH $SSH_DIR/id_rsa'
+                    sh 'chmod 600 $SSH_DIR/id_rsa' // Ensure proper permissions
+                    dir('zino_sec_comp_take_home/task1/microk8s') {
+                        sh 'echo [EC2] > temp_inventory.ini'
+                        sh "echo ${EC2_PUBLIC_IP} ansible_ssh_user=jenkins ansible_ssh_private_key_file=$SSH_DIR/id_rsa >> temp_inventory.ini"
+                        sh 'ansible-playbook ansible.yml -i temp_inventory.ini'
+                    }
+                }
+            }
         }
         
         stage('Deploy SonarQube') {
