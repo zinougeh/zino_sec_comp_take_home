@@ -13,7 +13,7 @@ pipeline {
             }
         }
 
-        stage('Deploy on AWS') {
+        stage('Infra Deployment via terraform') {
             steps {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'],
@@ -31,7 +31,7 @@ pipeline {
             }
         }
 
-        stage('Configure EC2') {
+        stage('Configure jenkins user on EC2 instance') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
                     sh """
@@ -44,7 +44,7 @@ pipeline {
             }
         }
 
-        stage('Configure EC2 with MicroK8s') {
+        stage('ansible Configure MicroK8s on EC2') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
                     sh 'mkdir -p $SSH_DIR'
@@ -59,7 +59,7 @@ pipeline {
             }
         }
         
-        stage('Deploy SonarQube') {
+        stage('Deploy SonarQube on Micro8s') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
                     dir('zino_sec_comp_take_home/task1/sonar') {
