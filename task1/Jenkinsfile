@@ -38,7 +38,7 @@ pipeline {
                     sh "chmod 600 $SSH_DIR/id_rsa"
                     dir('zino_sec_comp_take_home/task1/microk8s') {
                         sh """
-                        ansible-playbook -i ${env.EC2_PUBLIC_IP}, -u jenkins --private-key=${SSH_DIR}/id_rsa playbook.yaml
+                        ansible-playbook -i ${env.EC2_PUBLIC_IP}, -u jenkins --private-key=${SSH_DIR}/id_rsa ansible.yml 
                         """
                     }
                 }
