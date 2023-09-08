@@ -7,17 +7,17 @@ variable "ssh_public_key" {
   type        = string
 }
 
-resource "aws_key_pair" "deployer" {
-  key_name   = "sec_com_ass_key_pair"
-  public_key = var.ssh_public_key
-}
+# Using existing key pair, so we won't declare it here again.
 
-# Assuming VPC exists, no changes made to VPC resource definition
+# Assuming VPC exists, directly referencing its ID
+locals {
+  vpc_id = "vpc-0b2b089d46f9cbb7d"
+}
 
 resource "aws_security_group" "allow_ssh_and_http" {
   name        = "allow_ssh_and_http"
   description = "Allow SSH and HTTP inbound traffic"
-  vpc_id      = "vpc-0b2b089d46f9cbb7d" # Direct VPC ID used
+  vpc_id      = local.vpc_id
 
   ingress {
     from_port   = 22
@@ -44,10 +44,10 @@ resource "aws_security_group" "allow_ssh_and_http" {
 resource "aws_instance" "ec2_instance" {
   ami                   = "ami-0c65adc9a5c1b5d7c"
   instance_type         = "t2.large"
-  key_name              = aws_key_pair.deployer.key_name
+  key_name              = "sec_com_ass_key_pair"
   vpc_security_group_ids = [aws_security_group.allow_ssh_and_http.id]
-  subnet_id              = "sec_comp_subnet"  # Use the existing subnet ID here
-  user_data              = templatefile("${path.module}/user_data.sh", { ssh_public_key = file(var.public_key_path) })
+  subnet_id              = "subnet-07752613538db1a9b"
+  user_data              = templatefile("${path.module}/user_data.sh", { ssh_public_key = var.ssh_public_key })
 
   tags = {
     Name = "MicroK8s-Instance"
@@ -61,30 +61,6 @@ resource "aws_eip" "eip_alloc" {
     Name = "EC2 EIP"
   }
 }
-
-//resource "aws_internet_gateway" "main_gw" {
- // vpc_id = "vpc-0b2b089d46f9cbb7d" # Direct VPC ID used
-//  tags = {
-//    Name = "Main Internet Gateway"
-//  }
-//}
-
-//resource "aws_route_table" "route_table" {
-//  vpc_id = "vpc-0b2b089d46f9cbb7d" # Direct VPC ID used
-//  route {
-//    cidr_block = "0.0.0.0/0"
-//    gateway_id = aws_internet_gateway.main_gw.id
-//  }
-
-//  tags = {
-//    Name = "Main Route Table"
-//  }
-//}
-
-//resource "aws_route_table_association" "route_table_association" {
-//  subnet_id      = aws_subnet.main_subnet.id
-//  route_table_id = aws_route_table.route_table.id
-//}
 
 output "instance_id" {
   description = "ID of the EC2 instance"
