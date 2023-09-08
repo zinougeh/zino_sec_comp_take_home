@@ -17,7 +17,7 @@ resource "aws_key_pair" "deployer" {
 resource "aws_security_group" "allow_ssh_and_http" {
   name        = "allow_ssh_and_http"
   description = "Allow SSH and HTTP inbound traffic"
-  vpc_id      = aws_vpc.main_vpc.id
+  vpc_id      = "vpc-0b2b089d46f9cbb7d" # Direct VPC ID used
 
   ingress {
     from_port   = 22
@@ -63,14 +63,14 @@ resource "aws_eip" "eip_alloc" {
 }
 
 resource "aws_internet_gateway" "main_gw" {
-  vpc_id = aws_vpc.main_vpc.id
+  vpc_id = "vpc-0b2b089d46f9cbb7d" # Direct VPC ID used
   tags = {
     Name = "Main Internet Gateway"
   }
 }
 
 resource "aws_route_table" "route_table" {
-  vpc_id = aws_vpc.main_vpc.id
+  vpc_id = "vpc-0b2b089d46f9cbb7d" # Direct VPC ID used
   route {
     cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.main_gw.id
