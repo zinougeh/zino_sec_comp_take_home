@@ -19,18 +19,17 @@ sudo sh -c "iptables-save > /etc/iptables/rules.v4"
 # Create user and set up SSH for it
 sudo useradd jenkins -m -s /bin/bash
 sudo mkdir -p /home/jenkins/.ssh
-echo "${ssh_public_key}" | sudo tee -a /home/jenkins/.ssh/authorized_keys
+echo "${ssh_public_key}" | sudo tee /home/jenkins/.ssh/authorized_keys
 sudo chown -R jenkins:jenkins /home/jenkins/.ssh
 sudo chmod 700 /home/jenkins/.ssh
 sudo chmod 600 /home/jenkins/.ssh/authorized_keys
 
-# Allow jenkins user to have passwordless sudo capabilities
-echo "jenkins ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
-
-# SSH server config to deny password authentication
 sudo sed -i "s/PasswordAuthentication yes/PasswordAuthentication no/g" /etc/ssh/sshd_config
 sudo sed -i "s/PermitRootLogin yes/PermitRootLogin no/g" /etc/ssh/sshd_config
 sudo service sshd restart
+
+# Allow jenkins user to have passwordless sudo capabilities
+echo "jenkins ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
 
 # Install microk8s and configure
 sudo snap install microk8s --classic
