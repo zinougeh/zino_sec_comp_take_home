@@ -3,13 +3,10 @@ provider "aws" {
 }
 
 variable "ssh_public_key" {
-  description = "SSH public key"
-  type        = string
+  description = "SSH public key content"
+  default     = ""  
 }
 
-# Using existing key pair, so we won't declare it here again.
-
-# Assuming VPC exists, directly referencing its ID
 locals {
   vpc_id = "vpc-0b2b089d46f9cbb7d"
 }
@@ -44,7 +41,7 @@ resource "aws_security_group" "allow_ssh_and_http" {
 resource "aws_instance" "ec2_instance" {
   ami                   = "ami-0c65adc9a5c1b5d7c"
   instance_type         = "t2.large"
-  key_name              = "sec_com_ass_key_pair" # Using existing key pair
+  key_name              = "sec_com_ass_key_pair"
   vpc_security_group_ids = [aws_security_group.allow_ssh_and_http.id]
   subnet_id              = "subnet-07752613538db1a9b"
   user_data              = templatefile("${path.module}/user_data.sh", { ssh_public_key = var.ssh_public_key })
