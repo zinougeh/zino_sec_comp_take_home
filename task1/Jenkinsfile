@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        SSH_DIR = "${env./var/lib/jenkins}/.ssh"
+        SSH_DIR = "/var/lib/jenkins/.ssh"
     }
 
     stages {
