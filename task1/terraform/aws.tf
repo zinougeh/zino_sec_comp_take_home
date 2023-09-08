@@ -15,7 +15,7 @@ locals {
 }
 
 resource "aws_security_group" "allow_ssh_and_http" {
-  name        = "allow_ssh_and_http"
+  name        = "sec_comp_allow_ssh_and_http"
   description = "Allow SSH and HTTP inbound traffic"
   vpc_id      = local.vpc_id
 
