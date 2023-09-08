@@ -1,6 +1,6 @@
 ---
 - name: MicroK8s Installation
-  hosts: EC2
+  hosts: all
   become: yes  # If you need to escalate privileges to run the script
 
   tasks:
