@@ -17,11 +17,11 @@ pipeline {
             steps {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'],
-                    sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')
+                    sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')
                 ]) {
                     dir('zino_sec_comp_take_home/task1/terraform') {
                         sh 'terraform init'
-                        sh 'terraform apply -auto-approve -var="ssh_public_key=$(cat $SSH_KEY_PATH.pub)"'
+                        sh 'terraform apply -auto-approve -var="ssh_public_key=$(cat $SSH_KEY.pub)"'
                         script {
                             env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
                         }
@@ -32,14 +32,12 @@ pipeline {
 
         stage('Ansible Configures MicroK8s on EC2') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
                     sh 'mkdir -p $SSH_DIR'
-                    sh "cp $SSH_KEY_PATH $SSH_DIR/id_rsa.pem"
-                    sh "chmod 600 $SSH_DIR/id_rsa.pem"
+                    sh 'cp $SSH_KEY $SSH_DIR/id_rsa'
+                    sh 'chmod 600 $SSH_DIR/id_rsa'
                     dir('zino_sec_comp_take_home/task1/microk8s') {
-                        sh """
-                        ansible-playbook -i ${env.EC2_PUBLIC_IP}, -u jenkins --private-key=${SSH_DIR}/id_rsa.pem ansible.yml 
-                        """
+                        sh 'ansible-playbook -i $EC2_PUBLIC_IP, -u jenkins --private-key=$SSH_DIR/id_rsa ansible.yml'
                     }
                 }
             }
@@ -47,13 +45,11 @@ pipeline {
 
         stage('Helm SonarQube on Micro8s Deployment') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY')]) {
                     dir('zino_sec_comp_take_home/task1/sonar') {
                         sleep time: 600, unit: 'SECONDS'
-                        sh """
-                            scp -o StrictHostKeyChecking=no -i "${SSH_DIR}/id_rsa.pem" -r sonarqube ubuntu@${env.EC2_PUBLIC_IP}:/tmp
-                            ssh -o StrictHostKeyChecking=no -i "${SSH_DIR}/id_rsa.pem" ubuntu@${env.EC2_PUBLIC_IP} 'sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls'
-                        """
+                        sh 'scp -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa -r sonarqube ubuntu@$EC2_PUBLIC_IP:/tmp'
+                        sh 'ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa ubuntu@$EC2_PUBLIC_IP "sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls"'
                     }
                 }
             }
