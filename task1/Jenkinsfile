@@ -22,7 +22,7 @@ pipeline {
                     dir('zino_sec_comp_take_home/task1/terraform') {
                         sh 'terraform init'
                         sh 'terraform apply -auto-approve -var="ssh_public_key=' + SSH_KEY_PATH + '"'
-                        sleep time: 900, unit: 'SECONDS'
+                        sleep time: 600, unit: 'SECONDS'
                         script {
                             env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
                         }
@@ -50,7 +50,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
                     dir('zino_sec_comp_take_home/task1/sonar') {
-                        sleep time: 900, unit: 'SECONDS'
+                        sleep time: 600, unit: 'SECONDS'
                         sh """
                             scp -o StrictHostKeyChecking=no -i "${SSH_KEY_PATH}" -r sonarqube ubuntu@${EC2_PUBLIC_IP}:/tmp
                             ssh -o StrictHostKeyChecking=no -i "${SSH_KEY_PATH}" ubuntu@${EC2_PUBLIC_IP} 'sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls'
