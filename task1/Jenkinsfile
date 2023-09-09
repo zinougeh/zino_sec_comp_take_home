@@ -48,33 +48,34 @@ pipeline {
 
         stage('Ansible Configures MicroK8s on EC2') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-                    dir('zino_sec_comp_take_home/task1/microK8s') {
-                        sh 'mkdir -p $SSH_DIR'
-                        sh "cp ${SSH_KEY_PATH} $SSH_DIR/id_rsa.pem"
-                        sh "chmod 600 $SSH_DIR/id_rsa.pem"
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
+                        dir('zino_sec_comp_take_home/task1/microK8s') {
+                            sh 'mkdir -p $SSH_DIR'
+                            sh "cp ${SSH_KEY_PATH} $SSH_DIR/id_rsa.pem"
+                            sh "chmod 600 $SSH_DIR/id_rsa.pem"
                         
-                        writeFile file: 'ansible-ssh.cfg', text: """
-                            Host *
-                                StrictHostKeyChecking no
-                                IdentityFile ${SSH_DIR}/id_rsa.pem
-                                UserKnownHostsFile /dev/null
-                        """
+                            writeFile file: 'ansible-ssh.cfg', text: """
+                                Host *
+                                    StrictHostKeyChecking no
+                                    IdentityFile ${SSH_DIR}/id_rsa.pem
+                                    UserKnownHostsFile /dev/null
+                            """
                         
-                        script {
                             def exists = fileExists('ansible.yml')
                             if (!exists) {
                                 error "ansible.yml is missing in the current directory!"
                             }
-                        }
-                        
-                        retry(3) {
-                            sh "ANSIBLE_SSH_ARGS='-F ansible-ssh.cfg' ansible-playbook -i ${env.EC2_PUBLIC_IP}, -u ubuntu ansible.yml"
+                            
+                            retry(3) {
+                                sh "ANSIBLE_SSH_ARGS='-F ansible-ssh.cfg' ansible-playbook -i ${env.EC2_PUBLIC_IP}, -u ubuntu ansible.yml"
+                            }
                         }
                     }
                 }
             }
         }
+        
         stage('Helm SonarQube on Micro8s Deployment') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
