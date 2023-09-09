@@ -49,7 +49,7 @@ pipeline {
         stage('Ansible Configures MicroK8s on EC2') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-                    dir('zino_sec_comp_take_home/task1/MicroK8s') {
+                    dir('zino_sec_comp_take_home/task1/microK8s') {
                         sh 'mkdir -p $SSH_DIR'
                         sh "cp ${SSH_KEY_PATH} $SSH_DIR/id_rsa.pem"
                         sh "chmod 600 $SSH_DIR/id_rsa.pem"
