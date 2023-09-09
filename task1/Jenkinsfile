@@ -9,7 +9,7 @@ pipeline {
         stage('Initialization') {
             steps {
                 deleteDir()
-                sh 'git clone https://github.com/zinougeh/zino_sec_comp_take_home.git'
+                sh 'git clone --recursive https://github.com/zinougeh/zino_sec_comp_take_home.git'
             }
         }
 
@@ -53,22 +53,25 @@ pipeline {
                         sh 'mkdir -p $SSH_DIR'
                         sh "cp ${SSH_KEY_PATH} $SSH_DIR/id_rsa.pem"
                         sh "chmod 600 $SSH_DIR/id_rsa.pem"
-                        
+                    
                         writeFile file: 'ansible-ssh.cfg', text: """
-                        Host *
-                            StrictHostKeyChecking no
-                            IdentityFile ${SSH_DIR}/id_rsa.pem
-                            UserKnownHostsFile /dev/null
+                            Host *
+                                StrictHostKeyChecking no
+                                IdentityFile ${SSH_DIR}/id_rsa.pem
+                                UserKnownHostsFile /dev/null
                         """
                         
-                        // Debugging: Check the current working directory and its contents
-                        sh "pwd"
-                        sh "ls -al"
-                        
+                        // Check if ansible.yml exists
+                        def exists = fileExists 'ansible.yml'
+                        if (!exists) {
+                            error "ansible.yml is missing in the current directory!"
+                        }
+                    
                         retry(3) {
                             sh "ANSIBLE_SSH_ARGS='-F ansible-ssh.cfg' ansible-playbook -i ${env.EC2_PUBLIC_IP}, -u ubuntu ansible.yml"
                         }
                     }
+
                 }
             }
         }
