@@ -51,6 +51,11 @@ resource "aws_instance" "ec2_instance" {
   }
 }
 
+provisioner "local-exec" {
+    command = "chmod +x ${path.module}/user_data.sh"
+  }
+}
+
 resource "aws_eip" "eip_alloc" {
   instance = aws_instance.ec2_instance.id
 
