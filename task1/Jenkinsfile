@@ -35,7 +35,7 @@ pipeline {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
                     script {
                         for (int i = 0; i < 30; i++) {
-                            def retVal = sh(script: "ssh -i ${SSH_DIR}/id_rsa.pem -o StrictHostKeyChecking=no -o ConnectionAttempts=1 jenkins@${env.EC2_PUBLIC_IP} 'echo SSH_READY'", returnStatus: true)
+                            def retVal = sh(script: "ssh -i $SSH_DIR/id_rsa.pem -o StrictHostKeyChecking=no -o ConnectionAttempts=1 jenkins@$EC2_PUBLIC_IP 'echo SSH_READY'", returnStatus: true)
                             if (retVal == 0) {
                                 break
                             }
@@ -51,18 +51,18 @@ pipeline {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
                     dir('zino_sec_comp_take_home/task1/microK8s') {
                         sh 'mkdir -p $SSH_DIR'
-                        sh "cp ${SSH_KEY_PATH} $SSH_DIR/id_rsa.pem"
+                        sh "cp $SSH_KEY_PATH $SSH_DIR/id_rsa.pem"
                         sh "chmod 600 $SSH_DIR/id_rsa.pem"
                         
                         writeFile file: 'ansible-ssh.cfg', text: """
                         Host *
                             StrictHostKeyChecking no
-                            IdentityFile ${SSH_DIR}/id_rsa.pem
+                            IdentityFile $SSH_DIR/id_rsa.pem
                             UserKnownHostsFile /dev/null
                         """
                         
                         retry(3) {
-                            sh "ANSIBLE_SSH_ARGS='-F ansible-ssh.cfg' ansible-playbook -i ${env.EC2_PUBLIC_IP}, -u jenkins ansible.yml"
+                            sh "ANSIBLE_SSH_ARGS='-F ansible-ssh.cfg' ansible-playbook -i $EC2_PUBLIC_IP, -u jenkins ansible.yml"
                         }
                     }
                 }
@@ -73,12 +73,10 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
                     dir('zino_sec_comp_take_home/task1/sonar') {
-                        script {
-                            sh """
-                                scp -o StrictHostKeyChecking=no -i "${SSH_DIR}/id_rsa.pem" -r sonarqube ubuntu@${env.EC2_PUBLIC_IP}:/tmp
-                                ssh -o StrictHostKeyChecking=no -i "${SSH_DIR}/id_rsa.pem" ubuntu@${env.EC2_PUBLIC_IP} 'sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls'
-                            """
-                        }
+                        sh """
+                            scp -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem -r sonarqube ubuntu@$EC2_PUBLIC_IP:/tmp
+                            ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@$EC2_PUBLIC_IP 'sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls'
+                        """
                     }
                 }
             }
