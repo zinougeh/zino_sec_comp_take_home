@@ -49,9 +49,8 @@ resource "aws_instance" "ec2_instance" {
   tags = {
     Name = "MicroK8s-Instance"
   }
-}
 
-provisioner "local-exec" {
+  provisioner "local-exec" {
     command = "chmod +x ${path.module}/user_data.sh"
   }
 }
