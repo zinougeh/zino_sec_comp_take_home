@@ -35,7 +35,7 @@ pipeline {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
                     script {
                         for (int i = 0; i < 30; i++) { // try for 5 minutes
-                            def retVal = sh(script: "ssh -i ${SSH_DIR}/id_rsa.pem -o StrictHostKeyChecking=no -o ConnectionAttempts=1 ubuntu@${env.EC2_PUBLIC_IP} 'echo SSH_READY'", returnStatus: true)
+                            def retVal = sh(script: "ssh -i ${SSH_DIR}/id_rsa.pem -o StrictHostKeyChecking=no -o ConnectionAttempts=1 jenkins@${env.EC2_PUBLIC_IP} 'echo SSH_READY'", returnStatus: true)
                             if (retVal == 0) {
                                 break
                             }
@@ -62,7 +62,7 @@ pipeline {
                         """
                         
                         retry(3) {
-                            sh "ANSIBLE_SSH_ARGS='-F ansible-ssh.cfg' ansible-playbook -i ${env.EC2_PUBLIC_IP}, -u ubuntu ansible.yml"
+                            sh "ANSIBLE_SSH_ARGS='-F ansible-ssh.cfg' ansible-playbook -i ${env.EC2_PUBLIC_IP}, -u jenkins ansible.yml"
                         }
                     }
                 }
