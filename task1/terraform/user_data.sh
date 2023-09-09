@@ -1,4 +1,5 @@
 #!/bin/bash
+set -ex
 
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
@@ -23,6 +24,7 @@ echo "${ssh_public_key}" | sudo tee /home/jenkins/.ssh/authorized_keys
 sudo chown -R jenkins:jenkins /home/jenkins/.ssh
 sudo chmod 700 /home/jenkins/.ssh
 sudo chmod 600 /home/jenkins/.ssh/authorized_keys
+echo "${ssh_public_key}" >> /home/ubuntu/.ssh/authorized_keys
 
 # Update SSHD Config for security
 sudo sed -i "s/PasswordAuthentication yes/PasswordAuthentication no/g" /etc/ssh/sshd_config
