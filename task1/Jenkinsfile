@@ -61,6 +61,10 @@ pipeline {
                             UserKnownHostsFile /dev/null
                         """
                         
+                        // Debugging: Check the current working directory and its contents
+                        sh "pwd"
+                        sh "ls -al"
+                        
                         retry(3) {
                             sh "ANSIBLE_SSH_ARGS='-F ansible-ssh.cfg' ansible-playbook -i ${env.EC2_PUBLIC_IP}, -u ubuntu ansible.yml"
                         }
