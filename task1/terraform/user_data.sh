@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
 # Update and upgrade system packages
 sudo apt-get update -y && apt-get upgrade -y
@@ -24,6 +24,7 @@ sudo chown -R jenkins:jenkins /home/jenkins/.ssh
 sudo chmod 700 /home/jenkins/.ssh
 sudo chmod 600 /home/jenkins/.ssh/authorized_keys
 
+# Update SSHD Config for security
 sudo sed -i "s/PasswordAuthentication yes/PasswordAuthentication no/g" /etc/ssh/sshd_config
 sudo sed -i "s/PermitRootLogin yes/PermitRootLogin no/g" /etc/ssh/sshd_config
 sudo service sshd restart
