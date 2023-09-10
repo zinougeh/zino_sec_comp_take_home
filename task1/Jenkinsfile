@@ -5,11 +5,11 @@ pipeline {
         SSH_DIR = "/var/lib/jenkins/.ssh"
     }
 
-    stages {
+     stages {
         stage('Initialization') {
             steps {
                 deleteDir()
-                git 'https://github.com/zinougeh/zino_sec_comp_take_home.git'
+                sh 'git clone --recursive https://github.com/zinougeh/zino_sec_comp_take_home.git'
             }
         }
 
