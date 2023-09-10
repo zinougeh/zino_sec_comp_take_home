@@ -9,7 +9,7 @@ pipeline {
         stage('Initialization') {
             steps {
                 deleteDir()
-                sh 'git clone --recursive https://github.com/zinougeh/zino_sec_comp_take_home.git'
+                git 'https://github.com/zinougeh/zino_sec_comp_take_home.git'
             }
         }
 
