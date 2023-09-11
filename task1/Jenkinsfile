@@ -5,13 +5,25 @@ pipeline {
         SSH_DIR = "/var/lib/jenkins/.ssh"
     }
 
-    stages {
-        stage('Preparation') {
+        stage('Initialization') {
             steps {
+                // Use the Jenkins SCM step to checkout your repository
+                checkout([
+                    $class: 'GitSCM', 
+                    branches: [[name: '*/master']], 
+                    userRemoteConfigs: [[url: 'https://github.com/zinougeh/zino_sec_comp_take_home.git']], 
+                    extensions: [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'zino_sec_comp_take_home']]
+                ])
+            }
+        }
+
+      stage('Preparation') {
+        steps {
+            dir('zino_sec_comp_take_home') {
                 // Print the current directory and its contents for debugging
                 sh 'pwd'
                 sh 'ls -al'
-
+                
                 // Check for the presence of ansible.yml in the current directory
                 script {
                     if (!fileExists('ansible.yml')) {
@@ -20,20 +32,7 @@ pipeline {
                 }
             }
         }
-
-        stage('Initialization') {
-            steps {
-                script {
-                    if(!fileExists('zino_sec_comp_take_home')) {
-                        sh 'git clone --recursive https://github.com/zinougeh/zino_sec_comp_take_home.git'
-                    } else {
-                        dir('zino_sec_comp_take_home') {
-                            sh 'git pull'
-                        }
-                    }
-                }
-            }
-        }
+    }
 
         stage('AWS Infra Deployment via terraform') {
             steps {
