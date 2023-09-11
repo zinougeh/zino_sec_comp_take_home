@@ -23,20 +23,20 @@ pipeline {
                 
                 // Check for the presence of ansible.yml inside the microK8s directory
                 script {
-                    if (!fileExists('task1/microK8s/ansible.yml')) {
-                        error("ansible.yml is missing in the task1/microK8s directory!")
+                    if (!fileExists('task1/micro8s/ansible.yml')) {
+                        error("ansible.yml is missing in the task1/micro8s directory!")
                     }
                 }
             }
         }
-        
+
         stage('AWS Infra Deployment via terraform') {
             steps {
                 withCredentials([
                     [$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_Access', accessKeyVariable: 'AWS_ACCESS_KEY_ID', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'],
                     sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')
                 ]) {
-                    dir('task1/terraform') {  // Adjusted the directory path based on the new checkout location
+                    dir('task1/terraform') {
                         sh 'terraform init'
                         sh 'terraform apply -auto-approve -var="ssh_public_key=$(cat $SSH_KEY_PATH.pub)"'
                         script {
@@ -67,7 +67,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-                        dir('task1/microK8s') {
+                        dir('task1/micro8s') {
                             sh 'mkdir -p $SSH_DIR'
                             sh "cp ${SSH_KEY_PATH} $SSH_DIR/id_rsa.pem"
                             sh "chmod 600 $SSH_DIR/id_rsa.pem"
@@ -81,7 +81,7 @@ pipeline {
                         
                             def exists = fileExists('ansible.yml')
                             if (!exists) {
-                                error "ansible.yml is missing in the task1/microK8s directory!"
+                                error "ansible.yml is missing in the task1/micro8s directory!"
                             }
                             
                             retry(3) {
@@ -96,7 +96,7 @@ pipeline {
         stage('Helm SonarQube on Micro8s Deployment') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-                    dir('task1/sonar') {  // Adjusted the directory path based on the new checkout location
+                    dir('task1/sonar/sonarqube') {
                         script {
                             sh """
                                 scp -o StrictHostKeyChecking=no -i "${SSH_DIR}/id_rsa.pem" -r sonarqube ubuntu@${env.EC2_PUBLIC_IP}:/tmp
