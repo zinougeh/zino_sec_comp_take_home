@@ -8,31 +8,28 @@ pipeline {
     stages {
         stage('Initialization') {
             steps {
-                // Use the Jenkins SCM step to checkout your repository
                 checkout([
                     $class: 'GitSCM', 
-                    branches: [[name: '*/main']],  // Adjusted branch name to 'main'
+                    branches: [[name: '*/main']],
                     userRemoteConfigs: [[url: 'https://github.com/zinougeh/zino_sec_comp_take_home.git']]
-                    // Removed the 'extensions' for relative directory checkout
                 ])
             }
         }
 
         stage('Preparation') {
             steps {
-                // Adjusted the directory path based on the new checkout location
                 sh 'pwd'
                 sh 'ls -al'
                 
-                // Check for the presence of ansible.yml in the current directory
+                // Check for the presence of ansible.yml inside the microK8s directory
                 script {
-                    if (!fileExists('ansible.yml')) {
-                        error("ansible.yml is missing in the current directory!")
+                    if (!fileExists('task1/microK8s/ansible.yml')) {
+                        error("ansible.yml is missing in the task1/microK8s directory!")
                     }
                 }
             }
         }
-
+        
         stage('AWS Infra Deployment via terraform') {
             steps {
                 withCredentials([
@@ -70,7 +67,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-                        dir('task1/microK8s') {  // Adjusted the directory path based on the new checkout location
+                        dir('task1/microK8s') {
                             sh 'mkdir -p $SSH_DIR'
                             sh "cp ${SSH_KEY_PATH} $SSH_DIR/id_rsa.pem"
                             sh "chmod 600 $SSH_DIR/id_rsa.pem"
@@ -84,7 +81,7 @@ pipeline {
                         
                             def exists = fileExists('ansible.yml')
                             if (!exists) {
-                                error "ansible.yml is missing in the current directory!"
+                                error "ansible.yml is missing in the task1/microK8s directory!"
                             }
                             
                             retry(3) {
