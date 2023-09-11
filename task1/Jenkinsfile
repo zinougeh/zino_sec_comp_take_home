@@ -23,7 +23,7 @@ pipeline {
                 
                 // Check for the presence of ansible.yml inside the microK8s directory
                 script {
-                    if (!fileExists('task1/micro8s/ansible.yml')) {
+                    if (!fileExists('task1/microk8s/ansible.yml')) {
                         error("ansible.yml is missing in the task1/micro8s directory!")
                     }
                 }
@@ -67,7 +67,7 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-                        dir('task1/micro8s') {
+                        dir('task1/microk8s') {
                             sh 'mkdir -p $SSH_DIR'
                             sh "cp ${SSH_KEY_PATH} $SSH_DIR/id_rsa.pem"
                             sh "chmod 600 $SSH_DIR/id_rsa.pem"
@@ -81,7 +81,7 @@ pipeline {
                         
                             def exists = fileExists('ansible.yml')
                             if (!exists) {
-                                error "ansible.yml is missing in the task1/micro8s directory!"
+                                error "ansible.yml is missing in the task1/microk8s directory!"
                             }
                             
                             retry(3) {
