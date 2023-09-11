@@ -67,10 +67,10 @@ pipeline {
             steps {
                 script {
                     withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-                        // Check if the jenkins user exists on the target machine
+                        # Check if the jenkins user exists on the target machine
                         def userExists = sh(script: "ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} 'getent passwd jenkins'", returnStatus: true)
                         
-                        // If the user doesn't exist, we create it
+                        # If the user doesn't exist, we create it
                         if (userExists != 0) {
                             sh """
                                 # Creating the jenkins user
