@@ -73,7 +73,7 @@ pipeline {
                         // If the user doesn't exist, we create it
                         if (userExists != 0) {
                             sh """
-                                // Creating the jenkins user
+                                # Creating the jenkins user
                                 ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "sudo useradd jenkins"
                                 
                                 // Granting the jenkins user sudo privileges
