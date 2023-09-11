@@ -81,7 +81,7 @@ pipeline {
                         
                             def exists = fileExists('ansible.yml')
                             if (!exists) {
-                                error "ansible.yml is missing in the task1/micro8s directory!"
+                                error "ansible.yml is missing in the task1/microk8s directory!"
                             }
                             
                             retry(3) {
