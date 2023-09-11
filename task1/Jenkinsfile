@@ -63,6 +63,33 @@ pipeline {
             }
         }
 
+        stage('Setup Jenkins User on Target Host') {
+            steps {
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
+                        // Check if the jenkins user exists on the target machine
+                        def userExists = sh(script: "ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} 'getent passwd jenkins'", returnStatus: true)
+                        
+                        // If the user doesn't exist, we create it
+                        if (userExists != 0) {
+                            sh """
+                                // Creating the jenkins user
+                                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "sudo useradd jenkins"
+                                
+                                // Granting the jenkins user sudo privileges
+                                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "echo 'jenkins ALL=(ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers"
+                                
+                                // Setting up the SSH directory and copying the SSH keys
+                                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "sudo mkdir -p /home/jenkins/.ssh && sudo chown jenkins:jenkins /home/jenkins/.ssh"
+                                scp -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP}:/home/jenkins/.ssh/id_rsa.pem
+                                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "sudo chown jenkins:jenkins /home/jenkins/.ssh/id_rsa.pem && sudo chmod 600 /home/jenkins/.ssh/id_rsa.pem"
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Ansible Configures MicroK8s on EC2') {
             steps {
                 script {
