@@ -6,6 +6,22 @@ pipeline {
     }
 
     stages {
+        stage('Preparation') {
+            steps {
+                // Print the current directory and its contents for debugging
+                sh 'pwd'
+                sh 'ls -al'
+
+                // Check for the presence of ansible.yml in the current directory
+                script {
+                    if (!fileExists('ansible.yml')) {
+                        error("ansible.yml is missing in the current directory!")
+                    }
+                }
+            }
+        }
+
+    stages {
         stage('Initialization') {
             steps {
                 script {
