@@ -5,6 +5,7 @@ pipeline {
         SSH_DIR = "/var/lib/jenkins/.ssh"
     }
 
+    stages {
         stage('Initialization') {
             steps {
                 // Use the Jenkins SCM step to checkout your repository
@@ -17,22 +18,22 @@ pipeline {
             }
         }
 
-      stage('Preparation') {
-        steps {
-            dir('zino_sec_comp_take_home') {
-                // Print the current directory and its contents for debugging
-                sh 'pwd'
-                sh 'ls -al'
+        stage('Preparation') {
+            steps {
+                dir('zino_sec_comp_take_home') {
+                    // Print the current directory and its contents for debugging
+                    sh 'pwd'
+                    sh 'ls -al'
                 
-                // Check for the presence of ansible.yml in the current directory
-                script {
-                    if (!fileExists('ansible.yml')) {
-                        error("ansible.yml is missing in the current directory!")
+                    // Check for the presence of ansible.yml in the current directory
+                    script {
+                        if (!fileExists('ansible.yml')) {
+                            error("ansible.yml is missing in the current directory!")
+                        }
                     }
                 }
             }
         }
-    }
 
         stage('AWS Infra Deployment via terraform') {
             steps {
