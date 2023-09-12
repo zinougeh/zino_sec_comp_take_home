@@ -8,9 +8,14 @@ pipeline {
     stages {
         stage('Initialization') {
             steps {
-                checkout scm
+                checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: '*/main']],
+                    userRemoteConfigs: [[url: 'https://github.com/zinougeh/zino_sec_comp_take_home.git']]
+                ])
             }
         }
+
 
         stage('Preparation') {
             steps {
