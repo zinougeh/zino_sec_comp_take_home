@@ -82,11 +82,9 @@ pipeline {
                                 # Setting up the SSH directory
                                 ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "sudo mkdir -p /home/jenkins/.ssh && sudo chown jenkins:jenkins /home/jenkins/.ssh && sudo chmod 700 /home/jenkins/.ssh"
                                 
-                                # Copying the SSH public key using the ubuntu user
-                                scp -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem $SSH_DIR/id_rsa.pub ubuntu@${env.EC2_PUBLIC_IP}:/home/jenkins/.ssh/id_rsa.pub
-                                
-                                # Change ownership and permissions of the copied key using the ubuntu user
-                                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "sudo chown jenkins:jenkins /home/jenkins/.ssh/id_rsa.pub && sudo chmod 600 /home/jenkins/.ssh/id_rsa.pub"
+                                # Copying the SSH public key using the ubuntu user and then adjusting ownership and permissions
+                                scp -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem $SSH_DIR/id_rsa.pub ubuntu@${env.EC2_PUBLIC_IP}:/home/ubuntu/id_rsa.pub
+                                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "sudo mv /home/ubuntu/id_rsa.pub /home/jenkins/.ssh/ && sudo chown jenkins:jenkins /home/jenkins/.ssh/id_rsa.pub && sudo chmod 600 /home/jenkins/.ssh/id_rsa.pub"
                             """
                         }
                     }
