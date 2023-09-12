@@ -140,24 +140,24 @@ pipeline {
         }
 
         stage('Deploy SonarQube Ingress') {
-            steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-                    dir('task1/sonar') {
-                        sh """
-                            ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem jenkins@${env.EC2_PUBLIC_IP} "microk8s.kubectl apply -f ingress.yaml"
-                        """
-                    }
+        steps {
+            withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
+                dir('task1/sonar') {
+                    sh """
+                        ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem jenkins@${env.EC2_PUBLIC_IP} "microk8s.kubectl apply -f ingress.yaml"
+                    """
                 }
             }
         }
     }
 
-        stage('Helm SonarQube on MicroK8s Deployment') {
-            steps {
-                deploySonarQube()
-            }
+    // Added the Helm SonarQube on MicroK8s Deployment stage here
+    stage('Helm SonarQube on MicroK8s Deployment') {
+        steps {
+            deploySonarQube()
         }
-    }  
+    }
+  
 
     post {
         always {
