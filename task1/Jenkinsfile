@@ -152,13 +152,12 @@ pipeline {
         }
     }
 
-        
         stage('Helm SonarQube on MicroK8s Deployment') {
             steps {
                 deploySonarQube()
             }
         }
-    }
+    }  
 
     post {
         always {
