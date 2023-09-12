@@ -11,6 +11,5 @@ spec:
   ports:
     - port: 80
       targetPort: 9000
-      nodePort: 30080
   selector:
     app: sonar
