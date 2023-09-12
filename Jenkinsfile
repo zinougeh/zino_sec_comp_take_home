@@ -115,6 +115,12 @@ pipeline {
                             
                             retry(3) {
                                 sh "ANSIBLE_SSH_ARGS='-F ansible-ssh.cfg' ansible-playbook -i ${env.EC2_PUBLIC_IP}, -u ubuntu ansible.yml"
+                                sudo snap install microk8s --classic
+                                sudo usermod -a -G microk8s $USER
+                                sudo chown -f -R $USER ~/.kube
+                                ${MICROK8S} status --wait-ready
+                                sudo microk8s status --wait-ready
+                                sudo microk8s enable dns storage helm3
                             }
                         }
                     }
@@ -129,7 +135,9 @@ pipeline {
                         script {
                             sh """
                                 scp -o StrictHostKeyChecking=no -i "${SSH_DIR}/id_rsa.pem" -r sonarqube ubuntu@${env.EC2_PUBLIC_IP}:/tmp
-                                ssh -o StrictHostKeyChecking=no -i "${SSH_DIR}/id_rsa.pem" ubuntu@${env.EC2_PUBLIC_IP} 'sudo microk8s helm install sonar /tmp/sonarqube && sudo microk8s helm ls'
+                                ssh -o StrictHostKeyChecking=no -i "${SSH_DIR}/id_rsa.pem" ubuntu@${env.EC2_PUBLIC_IP} 'sudo microk8s helm3 repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube'
+                                sudo microk8s helm3 repo update
+                                sudo microk8s helm3 install sonarqube stable/sonarqube -f task1/sonar/values.yaml
                             """
                         }
                     }
