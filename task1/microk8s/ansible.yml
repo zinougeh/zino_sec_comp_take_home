@@ -25,3 +25,25 @@
         sudo snap install microk8s --classic || echo "Already Installed"
         echo "Wait for microk8s to be ready"
         sudo microk8s status --wait-ready
+
+    - name: Install nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Copy nginx reverse proxy config for SonarQube
+      copy:
+        src: nginx-sonar-config.conf
+        dest: /etc/nginx/sites-available/sonar
+
+    - name: Enable nginx config
+      file:
+        src: /etc/nginx/sites-available/sonar
+        dest: /etc/nginx/sites-enabled/sonar
+        state: link
+
+    - name: Restart nginx
+      service:
+        name: nginx
+        state: restarted
+
