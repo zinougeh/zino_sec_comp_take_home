@@ -73,15 +73,19 @@ pipeline {
                         // If the user doesn't exist, we create it
                         if (userExists != 0) {
                             sh """
-                                # Creating the jenkins user with /bin/bash as the default shell
-                                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "sudo useradd -m -s /bin/bash jenkins"
+                                # Creating the jenkins user
+                                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "sudo useradd jenkins"
                                 
                                 # Granting the jenkins user sudo privileges
                                 ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "echo 'jenkins ALL=(ALL) NOPASSWD:ALL' | sudo tee -a /etc/sudoers"
                                 
-                                # Setting up the SSH directory and copying the SSH keys
-                                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "sudo mkdir -p /home/jenkins/.ssh && sudo chown jenkins:jenkins /home/jenkins && sudo chmod 700 /home/jenkins && sudo chown jenkins:jenkins /home/jenkins/.ssh && sudo chmod 700 /home/jenkins/.ssh"
+                                # Setting up the SSH directory
+                                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "sudo mkdir -p /home/jenkins/.ssh && sudo chown jenkins:jenkins /home/jenkins/.ssh && sudo chmod 700 /home/jenkins/.ssh"
+                                
+                                # Copying the SSH key using the ubuntu user
                                 scp -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP}:/home/jenkins/.ssh/id_rsa.pem
+                                
+                                # Change ownership and permissions of the copied key using the ubuntu user
                                 ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem ubuntu@${env.EC2_PUBLIC_IP} "sudo chown jenkins:jenkins /home/jenkins/.ssh/id_rsa.pem && sudo chmod 600 /home/jenkins/.ssh/id_rsa.pem"
                             """
                         }
