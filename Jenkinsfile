@@ -125,7 +125,7 @@ pipeline {
         stage('Helm SonarQube on MicroK8s Deployment') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-                    dir('task1/sonar/sonarqube') {
+                    dir('task1/sonar') {
                         script {
                             sh """
                                 scp -o StrictHostKeyChecking=no -i "${SSH_DIR}/id_rsa.pem" -r sonarqube ubuntu@${env.EC2_PUBLIC_IP}:/tmp
