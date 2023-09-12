@@ -9,7 +9,7 @@ pipeline {
         stage('Initialization') {
             steps {
                 checkout([
-                    $class: 'GitSCM', 
+                    $class: 'GitSCM',
                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[url: 'https://github.com/zinougeh/zino_sec_comp_take_home.git']]
                 ])
@@ -24,7 +24,7 @@ pipeline {
                 // Check for the presence of ansible.yml inside the microK8s directory
                 script {
                     if (!fileExists('task1/microk8s/ansible.yml')) {
-                        error("ansible.yml is missing in the task1/micro8s directory!")
+                        error("ansible.yml is missing in the task1/microk8s directory!")
                     }
                 }
             }
@@ -38,7 +38,7 @@ pipeline {
                 ]) {
                     dir('task1/terraform') {
                         sh 'terraform init'
-                        sh 'terraform apply -auto-approve -var="ssh_public_key=$(cat $SSH_KEY_PATH.pub)"'
+                        sh 'terraform apply -auto-approve -var="ssh_public_key=$(cat ${SSH_KEY_PATH}.pub)"'
                         script {
                             env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
                         }
@@ -124,7 +124,7 @@ pipeline {
             }
         }
 
-        stage('Helm SonarQube on Micro8s Deployment') {
+        stage('Helm SonarQube on MicroK8s Deployment') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
                     dir('task1/sonar/sonarqube') {
