@@ -136,9 +136,19 @@ def deploySonarQube() {
     withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
         dir('task1/sonar') {
             sh """
-                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem jenkins@${env.EC2_PUBLIC_IP} "microk8s helm repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube"
-                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem jenkins@${env.EC2_PUBLIC_IP} "microk8s helm repo update"
-                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem jenkins@${env.EC2_PUBLIC_IP} "microk8s helm install sonar sonarqube -f values.yaml"
+            # Add the EC2's public key to known hosts for security
+            ssh-keyscan ${env.EC2_PUBLIC_IP} >> ~/.ssh/known_hosts
+            
+            # Ensure microk8s is installed
+            ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "command -v microk8s || sudo snap install microk8s --classic"
+            
+            # Ensure helm is installed within microk8s
+            ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 version || microk8s enable helm3"
+
+            # Add the SonarQube helm repo and install SonarQube
+            ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube"
+            ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 repo update"
+            ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 install sonar sonarqube -f values.yaml"
             """
         }
     }
