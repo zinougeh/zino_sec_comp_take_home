@@ -111,6 +111,48 @@ pipeline {
             }
         }
 
+        stage('Setup Dependencies') {
+            steps {
+                // Ensure kubectl is installed
+                sh '''
+                    if ! command -v kubectl &> /dev/null; then
+                        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                        chmod +x kubectl
+                        sudo mv kubectl /usr/local/bin/
+                    fi
+                '''
+            }
+        }
+
+        stage('Deploy SonarQube with Helm') {
+            steps {
+                deploySonarQube()
+            }
+        }
+
+        stage('Deploy SonarQube Proxy') {
+            steps {
+                sh '''
+                    chmod +x task1/sonar/deploy_sonar_proxy.sh
+                    ./task1/sonar/deploy_sonar_proxy.sh
+                '''
+            }
+        }
+
+        stage('Deploy SonarQube Ingress') {
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
+                    dir('task1/sonar') {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem jenkins@${env.EC2_PUBLIC_IP} "microk8s.kubectl apply -f ingress.yaml"
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+        
         stage('Helm SonarQube on MicroK8s Deployment') {
             steps {
                 deploySonarQube()
@@ -148,7 +190,7 @@ def deploySonarQube() {
             # Add the SonarQube helm repo and install SonarQube
             ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube"
             ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 repo update"
-            ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 install sonar sonarqube -f values.yaml"
+            ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 install sonar sonarqube/sonarqube -f values.yaml"
             """
         }
     }
