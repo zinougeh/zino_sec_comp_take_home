@@ -11,4 +11,4 @@ service:
   type: NodePort
   nodePort: 30080
 
-ingressEnabled: false
+ingressEnabled: true
