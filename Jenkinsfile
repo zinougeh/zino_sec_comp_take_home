@@ -16,7 +16,6 @@ pipeline {
             }
         }
 
-
         stage('Preparation') {
             steps {
                 script {
