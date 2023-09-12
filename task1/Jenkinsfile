@@ -138,7 +138,7 @@ def deploySonarQube() {
             sh """
                 ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 repo add sonarqube https://charts.helm.sh/stable"
                 ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 repo update"
-                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 install sonar sonarqube/sonarqube -f values.yaml"
+                ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 install sonar sonarqube -f values.yaml"
             """
         }
     }
