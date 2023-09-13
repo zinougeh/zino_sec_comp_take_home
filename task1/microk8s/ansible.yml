@@ -31,6 +31,9 @@
         name: nginx
         state: present
 
+     - name: Wait for apt lock
+       command: sh -c 'while lsof /var/lib/dpkg/lock-frontend; do sleep 10; done'
+   
     - name: Copy nginx reverse proxy config for SonarQube
       copy:
         src: nginx-sonar-config.conf
