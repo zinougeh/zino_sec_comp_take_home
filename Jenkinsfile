@@ -20,7 +20,6 @@ pipeline {
             steps {
                 sh 'pwd'
                 sh 'ls -al'
-
                 script {
                     if (!fileExists('task1/microk8s/ansible.yml')) {
                         error("ansible.yml is missing in the task1/microk8s directory!")
@@ -140,23 +139,18 @@ pipeline {
         }
 
         stage('Deploy SonarQube Ingress') {
-        steps {
-            withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-                dir('task1/sonar') {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no -i $SSH_DIR/id_rsa.pem jenkins@${env.EC2_PUBLIC_IP} "microk8s.kubectl apply -f ingress.yaml"
-                    """
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
+                    dir('task1/sonar') {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s.kubectl apply -f ingress.yaml"
+                        """
+                    }
                 }
             }
         }
     }
 
-    stage('Helm SonarQube on MicroK8s Deployment') {
-        steps {
-            deploySonarQube()
-        }
-    }
-  
     post {
         always {
             echo "Pipeline completed."
@@ -175,7 +169,6 @@ def deploySonarQube() {
     withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
         dir('task1/sonar') {
             sh """
-            # Add the EC2's public key to known hosts for security
             ssh-keyscan ${env.EC2_PUBLIC_IP} >> ~/.ssh/known_hosts
             ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "command -v microk8s || sudo snap install microk8s --classic"
             ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 version || microk8s enable helm3"
