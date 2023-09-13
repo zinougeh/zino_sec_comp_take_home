@@ -1,4 +1,3 @@
----
 - name: MicroK8s Installation
   hosts: all
   become: yes  # If you need to escalate privileges to run the script
@@ -31,9 +30,9 @@
         name: nginx
         state: present
 
-     - name: Wait for apt lock
-       command: sh -c 'while lsof /var/lib/dpkg/lock-frontend; do sleep 10; done'
-   
+    - name: Wait for apt lock    # Corrected the indentation here
+      command: sh -c 'while lsof /var/lib/dpkg/lock-frontend; do sleep 10; done'
+
     - name: Copy nginx reverse proxy config for SonarQube
       copy:
         src: nginx-sonar-config.conf
@@ -49,4 +48,3 @@
       service:
         name: nginx
         state: restarted
-
