@@ -1,8 +1,6 @@
 - name: MicroK8s Installation
   hosts: all
-  become: yes  # If you need to escalate privileges to run the script
-  environment:
-    JENKINS_PIPELINE_TASK: "YES"  # Set the environment variable for tasks run in this playbook
+  become: yes
 
   tasks:
     - name: Wait for SSH to become available
@@ -21,33 +19,16 @@
 
     - name: Install the MicroK8s
       shell: |
-        # Install microk8s
-        echo "Inside snap install"
         sudo snap install microk8s --classic || echo "Already Installed"
-        echo "Wait for microk8s to be ready"
         sudo microk8s status --wait-ready
 
-    - name: Check for apt lock and identify process
-      shell: lsof /var/lib/dpkg/lock-frontend
-      register: lock_output
-      failed_when: false
+    - name: Wait for APT lock to be released
+      command: lsof /var/lib/dpkg/lock-frontend
+      register: lock_check
+      retries: 10  # Number of retries before giving up
+      delay: 30   # Delay in seconds between retries
+      until: lock_check.rc != 0
       changed_when: false
-
-    - name: Get Process ID
-      set_fact:
-        lock_pid: "{{ lock_output.stdout.split()[1] }}"
-      when: lock_output.stdout | length > 0
-
-    - name: Check if the process has JENKINS_PIPELINE_TASK environment variable
-      command: grep -z JENKINS_PIPELINE_TASK /proc/{{ lock_pid }}/environ
-      register: is_pipeline_task
-      failed_when: false
-      changed_when: false
-      when: lock_output.stdout | length > 0
-
-    - name: Kill the process holding the apt lock if it's from the Jenkins pipeline
-      command: kill -9 {{ lock_pid }}
-      when: is_pipeline_task.rc == 0
 
     - name: Install nginx
       apt:
