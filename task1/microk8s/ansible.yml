@@ -1,6 +1,9 @@
 - name: MicroK8s Installation
   hosts: all
   become: yes
+  vars:
+    nginx_config_template: nginx-sonar-config.conf.j2
+    nginx_config_output: /etc/nginx/sites-available/sonar
 
   tasks:
     - name: Wait for SSH to become available
@@ -45,14 +48,22 @@
         name: nginx
         state: present
 
+    - name: Fetch EC2 public IP
+      command: curl -s http://169.254.169.254/latest/meta-data/public-ipv4
+      register: ec2_public_ip
+      changed_when: false
+
     - name: Copy nginx reverse proxy config for SonarQube
-      copy:
-        src: nginx-sonar-config.conf
-        dest: /etc/nginx/sites-available/sonar
+      template:
+        src: "{{ nginx_config_template }}"
+        dest: "{{ nginx_config_output }}"
+        mode: '0644'
+      vars:
+        public_ip: "{{ ec2_public_ip.stdout }}"
 
     - name: Enable nginx config
       file:
-        src: /etc/nginx/sites-available/sonar
+        src: "{{ nginx_config_output }}"
         dest: /etc/nginx/sites-enabled/sonar
         state: link
 
