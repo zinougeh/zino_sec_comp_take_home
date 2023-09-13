@@ -30,6 +30,16 @@
       shell: pkill -9 apt || true
       changed_when: false
 
+    - name: Check if dpkg needs configuration
+      shell: dpkg --configure -a
+      register: dpkg_check
+      changed_when: false
+      failed_when: false
+
+    - name: Correct dpkg configuration if needed
+      command: dpkg --configure -a
+      when: "'dpkg was interrupted' in dpkg_check.stderr"
+
     - name: Install nginx
       apt:
         name: nginx
