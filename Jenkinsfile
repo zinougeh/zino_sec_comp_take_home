@@ -47,9 +47,14 @@ pipeline {
 
         stage('Ensure EC2 SSH-ready') {
             steps {
+                echo "Ensuring the EC2 instance is ready for SSH connections..."
                 retry(10) {
-                    sleep(time: 10, unit: 'SECONDS')
-                    sh(script: "ssh -o StrictHostKeyChecking=no -i ${SSH_DIR}/id_rsa.pem -o ConnectionAttempts=1 ubuntu@${env.EC2_PUBLIC_IP} 'echo SSH_READY'", returnStatus: true)
+                    script {
+                        def result = sh(script: "ssh -o StrictHostKeyChecking=no -i ${SSH_DIR}/id_rsa.pem -o ConnectionAttempts=1 ubuntu@${env.EC2_PUBLIC_IP} 'echo SSH_READY'", returnStatus: true)
+                        if (result != 0) {
+                            error("Failed to connect via SSH. Retrying...")
+                        }
+                    }
                 }
             }
         }
