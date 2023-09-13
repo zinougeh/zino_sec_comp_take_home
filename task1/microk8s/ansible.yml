@@ -22,12 +22,12 @@
         sudo snap install microk8s --classic || echo "Already Installed"
         sudo microk8s status --wait-ready
 
-    - name: Wait for APT lock to be released
-      command: lsof /var/lib/dpkg/lock-frontend
-      register: lock_check
-      retries: 10  # Number of retries before giving up
-      delay: 30   # Delay in seconds between retries
-      until: lock_check.rc != 0
+    - name: Forcefully remove apt locks
+      command: rm -f /var/lib/dpkg/lock-frontend /var/cache/apt/archives/lock
+      changed_when: false
+
+    - name: Kill any apt processes
+      shell: pkill -9 apt || true
       changed_when: false
 
     - name: Install nginx
