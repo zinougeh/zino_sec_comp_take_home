@@ -13,7 +13,7 @@ fi
 cat <<EOL > /etc/nginx/sites-available/nginx-sonar-config.conf
 server {
     listen 80;
-    server_name _; # This placeholder will be replaced with the public IP
+    server_name {{ ec2_public_ip.stdout }}; # This placeholder will be replaced with the public IP
 
     location / {
         proxy_pass http://localhost:30080;
@@ -27,7 +27,7 @@ EOL
 # 3. Fetch the public IP and update Nginx configuration
 PUBLIC_IP=$(curl -s http://ifconfig.me)
 CONFIG_PATH="/etc/nginx/sites-available/nginx-sonar-config.conf"
-sed -i "s/server_name _;/server_name $PUBLIC_IP;/g" $CONFIG_PATH
+sed -i "s/{{ ec2_public_ip.stdout }};/server_name $PUBLIC_IP;/g" $CONFIG_PATH
 
 # 4. Link to sites-enabled (if not done before)
 ln -sfn $CONFIG_PATH /etc/nginx/sites-enabled/
