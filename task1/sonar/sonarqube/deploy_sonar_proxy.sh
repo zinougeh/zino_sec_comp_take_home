@@ -13,7 +13,7 @@ fi
 cat <<EOL > /etc/nginx/sites-available/nginx-sonar-config.conf
 server {
     listen 80;
-    server_name {{ ec2_public_ip.stdout }}; # This placeholder will be replaced with the public IP
+    server_name {{ ec2_public_ip.stdout }}; # This is the public IP
 
     location / {
         proxy_pass http://localhost:30080;
