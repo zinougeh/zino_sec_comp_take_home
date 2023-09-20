@@ -77,3 +77,8 @@ output "instance_private_ip" {
   description = "Private IP of the EC2 instance"
   value       = aws_instance.ec2_instance.private_ip
 }
+
+output "instance_public_dns" {
+  description = "Public DNS of the EC2 instance"
+  value       = aws_instance.ec2_instance.public_dns
+}
