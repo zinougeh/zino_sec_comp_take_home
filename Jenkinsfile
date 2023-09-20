@@ -131,12 +131,6 @@ pipeline {
 
         stage('Deploy SonarQube with Helm') {
             steps {
-                deploySonarQube()
-            }
-        }
-
-        stage('Deploy SonarQube with Helm') {
-            steps {
                 sh 'helm repo add sonarqube https://helm.sonarqube.org'
                 sh 'helm repo update'
                 sh 'helm install sonarqube sonarqube/sonarqube --set service.type=LoadBalancer'
