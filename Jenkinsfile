@@ -39,6 +39,7 @@ pipeline {
                         sh 'terraform apply -auto-approve -var="ssh_public_key=$(cat ${SSH_KEY_PATH}.pub)"'
                         script {
                             env.EC2_PUBLIC_IP = sh(script: 'terraform output instance_public_ip', returnStdout: true).trim()
+                            env.EC2_PUBLIC_DNS = sh(script: 'terraform output instance_public_dns', returnStdout: true).trim()
                         }
                     }
                 }
@@ -134,53 +135,43 @@ pipeline {
             }
         }
 
-        stage('Deploy SonarQube Proxy') {
+        stage('Deploy SonarQube with Helm') {
             steps {
-                sh '''
-                    chmod +x task1/sonar/deploy_sonar_proxy.sh
-                    ./task1/sonar/deploy_sonar_proxy.sh
-                '''
+                sh 'helm repo add sonarqube https://helm.sonarqube.org'
+                sh 'helm repo update'
+                sh 'helm install sonarqube sonarqube/sonarqube --set service.type=LoadBalancer'
+                sh 'kubectl rollout status deploy/sonarqube-sonarqube'
+                sh 'kubectl get all'
             }
         }
 
-        stage('Deploy SonarQube Ingress') {
+        stage('Post-Deployment Steps') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-                    dir('task1/sonar') {
-                        sh """
-                            ssh -o StrictHostKeyChecking=no -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s.kubectl apply -f ingress.yaml"
-                        """
-                    }
-                }
+                echo 'Do any post-deployment steps here'
             }
         }
     }
 
     post {
         always {
-            echo "Pipeline completed."
-            deleteDir()
+            sh 'echo "This will always run"'
+            // Clean-up any local resources or reset environment here
         }
         success {
-            echo "Deployment completed successfully."
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo "Deployment failed! Please check the logs for more information."
+            echo 'Pipeline failed!'
         }
     }
 }
 
-def deploySonarQube() {
-    withCredentials([sshUserPrivateKey(credentialsId: 'sec_com_ass_key_pair', keyFileVariable: 'SSH_KEY_PATH')]) {
-        dir('task1/sonar') {
-            sh """
-            ssh-keyscan ${env.EC2_PUBLIC_IP} >> ~/.ssh/known_hosts
-            ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "command -v microk8s || sudo snap install microk8s --classic"
-            ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 version || microk8s enable helm3"
-            ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 repo add sonarqube https://SonarSource.github.io/helm-chart-sonarqube"
-            ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 repo update"
-            ssh -i $SSH_KEY_PATH jenkins@${env.EC2_PUBLIC_IP} "microk8s helm3 install sonar sonarqube/sonarqube -f values.yaml"
-            """
-        }
-    }
+void deploySonarQube() {
+    // This is the logic for the sonarqube deployment
+    sh '''
+        helm repo add sonarqube https://helm.sonarqube.org
+        helm repo update
+        helm install sonarqube sonarqube/sonarqube --set service.type=LoadBalancer
+        kubectl rollout status deploy/sonarqube-sonarqube
+    '''
 }
